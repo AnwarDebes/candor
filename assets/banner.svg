@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-label="CANDOR: The Way Toward Interpretable AGI. Route computation through a certified Legible Bottleneck: an opaque activation is resolved into a sparse named concept code and a measured leak, then certified by a runtime Faithfulness Certificate delta.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#f6fbf9"/>
+      <stop offset="0.55" stop-color="#ecf5f2"/>
+      <stop offset="1" stop-color="#e2efeb"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#0c2b27"/>
+      <stop offset="0.55" stop-color="#0e6f60"/>
+      <stop offset="1" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#94a3a0"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <radialGradient id="glowTL" cx="0.12" cy="0.1" r="0.5">
+      <stop offset="0" stop-color="#2dd4bf" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBR" cx="0.9" cy="0.95" r="0.5">
+      <stop offset="0" stop-color="#10b981" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M26 0 L0 0 0 26" fill="none" stroke="#0e7c6b" stroke-width="1" opacity="0.06"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0c2b27" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- canvas -->
+  <rect width="1200" height="360" fill="url(#bg)"/>
+  <rect width="1200" height="360" fill="url(#grid)"/>
+  <rect width="1200" height="360" fill="url(#glowTL)"/>
+  <rect width="1200" height="360" fill="url(#glowBR)"/>
+
+  <!-- spec-sheet frame with corner ticks (the "certificate" feel) -->
+  <rect x="16" y="16" width="1168" height="328" rx="18" fill="none" stroke="#0e7c6b" stroke-width="1.4" opacity="0.45"/>
+  <g stroke="#0d9488" stroke-width="2.2" opacity="0.7">
+    <path d="M40 28 L40 46 M28 40 L46 40" fill="none"/>
+    <path d="M1160 28 L1160 46 M1154 40 L1172 40" fill="none"/>
+    <path d="M40 332 L40 314 M28 320 L46 320" fill="none"/>
+    <path d="M1160 332 L1160 314 M1154 320 L1172 320" fill="none"/>
+  </g>
+
+  <!-- masthead -->
+  <text x="600" y="62" text-anchor="middle" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="14" font-weight="700" letter-spacing="5.5" fill="#0e7c6b">INTERPRETABILITY&#160;&#160;BY&#160;&#160;CONSTRUCTION</text>
+  <text x="600" y="132" text-anchor="middle" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="78" font-weight="800" letter-spacing="3" fill="url(#ink)">CANDOR</text>
+  <text x="600" y="163" text-anchor="middle" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="15.5" font-weight="600" letter-spacing="1.2" fill="#3f615b">Concept-Anchored
+        <tspan fill="#0d9488">&#183;</tspan> Disentangled <tspan fill="#0d9488">&#183;</tspan> Output
+        <tspan fill="#0d9488">&#183;</tspan> Routing</text>
+
+  <!-- ============ the legible pipeline ============ -->
+  <!-- stage labels -->
+  <text x="170" y="206" text-anchor="middle" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="11.5" font-weight="700" letter-spacing="1" fill="#5b7a75">OPAQUE ACTIVATION</text>
+  <text x="515" y="206" text-anchor="middle" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="11.5" font-weight="700" letter-spacing="1" fill="#0e7c6b">LEGIBLE BOTTLENECK</text>
+  <text x="980" y="206" text-anchor="middle" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="11.5" font-weight="700" letter-spacing="1" fill="#5b7a75">FAITHFULNESS CERTIFICATE</text>
+
+  <!-- stage 1: opaque activation h (dense, mixed shades = superposition) -->
+  <g>
+    <rect x="150" y="222" width="40" height="16" rx="3" fill="#64807b"/>
+    <rect x="150" y="242" width="40" height="16" rx="3" fill="#9fb4af"/>
+    <rect x="150" y="262" width="40" height="16" rx="3" fill="#4a6f69"/>
+    <rect x="150" y="282" width="40" height="16" rx="3" fill="#86a39d"/>
+    <rect x="150" y="302" width="40" height="16" rx="3" fill="#5c7d77"/>
+    <text x="170" y="334" text-anchor="middle" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+          font-size="13" font-weight="700" fill="#33524d">h</text>
+  </g>
+
+  <!-- beam in -->
+  <path d="M196 270 L262 270" fill="none" stroke="url(#beam)" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M254 264 L264 270 L254 276 Z" fill="#14b8a6"/>
+
+  <!-- stage 2: the bottleneck panel -->
+  <rect x="276" y="216" width="478" height="108" rx="16" fill="#ffffff" fill-opacity="0.66"
+        stroke="#0d9488" stroke-width="1.6" filter="url(#soft)"/>
+
+  <!-- sparse named concept code: a dictionary of atoms, k lit (TopK) -->
+  <text x="300" y="239" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="11" fill="#5b7a75">sparse named concept code &#160;&#183;&#160; TopK (k active)</text>
+  <g>
+    <!-- dim dictionary atoms -->
+    <g fill="none" stroke="#9bb6b0" stroke-width="1.6">
+      <rect x="300" y="256" width="20" height="34" rx="4"/>
+      <rect x="350" y="256" width="20" height="34" rx="4"/>
+      <rect x="450" y="256" width="20" height="34" rx="4"/>
+      <rect x="550" y="256" width="20" height="34" rx="4"/>
+      <rect x="650" y="256" width="20" height="34" rx="4"/>
+      <rect x="700" y="256" width="20" height="34" rx="4"/>
+    </g>
+    <!-- lit (named) concepts -->
+    <g>
+      <rect x="400" y="256" width="20" height="34" rx="4" fill="#0d9488"/>
+      <rect x="500" y="256" width="20" height="34" rx="4" fill="#10b981"/>
+      <rect x="600" y="256" width="20" height="34" rx="4" fill="#0e7c6b"/>
+    </g>
+    <!-- concept names -->
+    <text x="410" y="250" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#0c5a4f">c<tspan font-size="8" dy="2">7</tspan></text>
+    <text x="510" y="250" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#0c5a4f">c<tspan font-size="8" dy="2">23</tspan></text>
+    <text x="610" y="250" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#0c5a4f">c<tspan font-size="8" dy="2">41</tspan></text>
+  </g>
+
+  <!-- the measured leak: a thin amber residual kept, not discarded -->
+  <path d="M300 301 L726 301" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="300" cy="301" r="3" fill="#d97706"/>
+  <text x="513" y="318" text-anchor="middle" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="10.5" fill="#b45309">leak r&#160;&#160;(kept and measured, not discarded)</text>
+
+  <!-- beam out -->
+  <path d="M758 270 L824 270" fill="none" stroke="url(#beam)" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M816 264 L826 270 L816 276 Z" fill="#10b981"/>
+
+  <!-- stage 3: the certificate seal -->
+  <circle cx="866" cy="268" r="30" fill="#ffffff" fill-opacity="0.7" stroke="#0d9488" stroke-width="2.4" filter="url(#soft)"/>
+  <circle cx="866" cy="268" r="30" fill="none" stroke="#10b981" stroke-width="6" opacity="0.12"/>
+  <path d="M852 268 L862 279 L882 255" fill="none" stroke="#0e7c6b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="912" y="263" text-anchor="start" font-family="ui-monospace, 'Cascadia Code', Consolas, monospace"
+        font-size="15" font-weight="700" fill="#0c2b27">&#948;(x) = TV(M, M<tspan font-size="11" dy="3">leg</tspan><tspan dy="-3">)</tspan></text>
+  <text x="912" y="287" text-anchor="start" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="12" fill="#3f615b">sound <tspan fill="#0d9488">&#183;</tspan> one-sided <tspan fill="#0d9488">&#183;</tspan> re-checkable</text>
+
+  <!-- footer thesis -->
+  <text x="600" y="338" text-anchor="middle" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="13.5" font-weight="500" fill="#33524d">The explanation is the forward pass: named concepts, a measured leak, and a runtime bound on everything else.</text>
+</svg>
