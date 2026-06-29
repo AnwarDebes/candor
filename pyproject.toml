@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "candorkit"
+version = "1.0.0"
+description = "CANDOR: interpretability by construction for AGI via certified Legible Bottlenecks"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Anwar Debes", email = "148064413+AnwarDebes@users.noreply.github.com" }]
+keywords = ["interpretability", "mechanistic-interpretability", "AI-safety",
+            "concept-bottleneck", "sparse-autoencoder", "AGI", "certification"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "torch>=2.1",
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "scikit-learn>=1.2",
+]
+
+[project.optional-dependencies]
+experiments = ["matplotlib>=3.7"]
+llm = ["transformers>=4.40", "safetensors>=0.4"]   # for the GPT-2 experiment (exp_gpt2)
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/AnwarDebes/candor"
+Repository = "https://github.com/AnwarDebes/candor"
+Paper = "https://github.com/AnwarDebes/candor/blob/main/paper/candor.pdf"
+
+[tool.setuptools]
+packages = ["candorkit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
