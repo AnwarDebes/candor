@@ -322,15 +322,17 @@ with no search.
 CANDOR is trained with one loss whose terms are mutually enabling. Writing
 $\ell_{\mathrm{task}}$ for cross-entropy, $\mathrm{sites}$ for the per-layer
 $(h,\hat h,r,c)$, and $\pi$ for a random batch permutation,
-\[
-\mathcal{L} \;=\;
+\begin{equation*}
+\begin{split}
+\mathcal{L} \;=\;&
 \underbrace{\ell_{\mathrm{task}}(M)}_{\text{accurate}}
 \;+\;\alpha\,\underbrace{\ell_{\mathrm{task}}(M_{\mathrm{leg}})}_{\text{legible model accurate}}
-\;+\;\beta\,\underbrace{\mathrm{KL}\!\big(M \,\|\, M_{\mathrm{leg}}\big)}_{\text{faithfulness}}
-\;+\;\lambda\,\underbrace{\textstyle\sum_\ell \tfrac{\|r^{(\ell)}\|^2}{\|h^{(\ell)}\|^2}}_{\text{leak energy}}
+\;+\;\beta\,\underbrace{\mathrm{KL}\!\big(M \,\|\, M_{\mathrm{leg}}\big)}_{\text{faithfulness}} \\[4pt]
+&\;+\;\lambda\,\underbrace{\textstyle\sum_\ell \tfrac{\|r^{(\ell)}\|^2}{\|h^{(\ell)}\|^2}}_{\text{leak energy}}
 \;+\;\mu\,\underbrace{\mathrm{TV}\!\big(M,\,M_{\mathrm{leak\text{-}swap}(\pi)}\big)}_{\text{causal sufficiency}}
 \;+\;\gamma\,\underbrace{\textstyle\sum_\ell\|W_{\mathrm{dec}}^{(\ell)}-\bar W^{(\ell)}\|^2}_{\text{anchoring}} .
-\]
+\end{split}
+\end{equation*}
 The \emph{faithfulness} term trains the leak-ablated replacement to reproduce the
 deployed model's behaviour, which drives the certificate $\delta$ toward zero. The
 \emph{leak-energy} term pulls the activation onto the sparse-decodable manifold so the
