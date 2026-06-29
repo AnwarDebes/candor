@@ -1,0 +1,56 @@
+{
+  "sweep": [
+    {
+      "k": 1,
+      "acc_full": 0.98925,
+      "acc_legible": 0.9795,
+      "delta_mean": 0.02838177978992462,
+      "recovery": 0.1703765058732111
+    },
+    {
+      "k": 2,
+      "acc_full": 0.99125,
+      "acc_legible": 0.96525,
+      "delta_mean": 0.04136866703629494,
+      "recovery": 0.1900530000634821
+    },
+    {
+      "k": 3,
+      "acc_full": 0.9915,
+      "acc_legible": 0.985,
+      "delta_mean": 0.01985909603536129,
+      "recovery": 0.37269397389403425
+    },
+    {
+      "k": 4,
+      "acc_full": 0.996,
+      "acc_legible": 0.97825,
+      "delta_mean": 0.0305637139827013,
+      "recovery": 0.4435682816401534
+    },
+    {
+      "k": 6,
+      "acc_full": 0.99775,
+      "acc_legible": 0.99275,
+      "delta_mean": 0.010881705209612846,
+      "recovery": 0.7421210065384244
+    },
+    {
+      "k": 8,
+      "acc_full": 0.99825,
+      "acc_legible": 0.99875,
+      "delta_mean": 0.003731601173058152,
+      "recovery": 0.9341539299428926
+    },
+    {
+      "k": 12,
+      "acc_full": 0.9985,
+      "acc_legible": 0.99925,
+      "delta_mean": 0.002668508095666766,
+      "recovery": 0.859679164922007
+    }
+  ],
+  "K_true_density": 0.3,
+  "n_relevant": 5,
+  "elapsed_sec": 475.2
+}

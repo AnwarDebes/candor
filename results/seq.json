@@ -1,0 +1,18 @@
+{
+  "task": "sequence-max",
+  "seq_len": 8,
+  "vocab": 10,
+  "n_classes": 10,
+  "n_train": 10200,
+  "n_test": 1800,
+  "steps": 1200,
+  "device": "cpu",
+  "acc_full": 0.9994444444444445,
+  "acc_legible": 0.9994444444444445,
+  "tax": 0.0,
+  "delta_mean": 1.968084688996896e-05,
+  "delta_p95": 2.4357082111237105e-06,
+  "agreement": 1.0,
+  "completeness": 0.9994444444444445,
+  "elapsed_sec": 148.2
+}
