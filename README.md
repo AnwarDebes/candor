@@ -72,10 +72,15 @@ contribution.* The Legible Bottleneck also composes with attention on a sequence
 **Honest real-LLM probe (GPT-2 small).** Retrofitting the channel onto a *frozen* GPT-2
 shows the certificate machinery transfers to a real model (δ is measurable by splicing and
 running GPT-2), **but a frozen retrofit does *not* favour CANDOR over a reconstruction-only
-SAE** (δ 0.11 vs 0.13). I report that honestly because it is the point: CANDOR is
-interpretability **by construction**, and its gains come from the model reshaping its
-computation through the channel *during training* (Exp 1 and 2), which a frozen retrofit
-cannot do. By-construction LLM training is the named next step.
+SAE** (δ 0.11 vs 0.13). A matched **layer-wise fine-tuning probe** (`exp_gpt2_ft.py`,
+unfreezing the spliced MLP under a capability-anchoring LM loss) extends the finding two
+ways: an ~8x reconstruction improvement leaves the certificate no tighter
+(**reconstruction and faithfulness dissociate**), and adding the behavioural + causal
+objectives still does not beat the reconstruction-only control (δ 0.156 vs 0.128, single
+seed and weighting). Both results are reported at the same standard as the positives,
+because that is the point: the by-construction gains of Exp 1 and 2 have *not yet* been
+reproduced on a pretrained model by retrofitting or local fine-tuning. **Full
+by-construction LLM training is the named open question.**
 
 ## Quick start
 

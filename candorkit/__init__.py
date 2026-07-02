@@ -19,7 +19,7 @@ from .model import LegibleMLP, LegibleTransformer, OpaqueMLP
 from .train import (TrainConfig, device_auto, fit_sae, sae_codes, train_candor,
                     train_opaque)
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "LegibleBottleneck", "BottleneckOutput", "topk_mask",

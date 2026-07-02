@@ -58,6 +58,12 @@
 \providecommand{\gptSaeDelta}{0.10}\providecommand{\gptCandorDelta}{0.03}\providecommand{\gptSaeSwap}{0.10}\providecommand{\gptCandorSwap}{0.03}
 \providecommand{\gptSaeRecon}{0.30}\providecommand{\gptCandorRecon}{0.40}\providecommand{\gptSaeRecovered}{70.0}\providecommand{\gptCandorRecovered}{90.0}
 \providecommand{\gptLossFull}{3.50}\providecommand{\gptLossAbl}{4.00}\providecommand{\gptLossSaeLeg}{3.70}\providecommand{\gptLossCandorLeg}{3.55}\providecommand{\gptDeltaRatio}{3.0}
+\providecommand{\ftSteps}{500}\providecommand{\ftOrigLoss}{5.44}
+\providecommand{\ftSaeDelta}{0.13}\providecommand{\ftCandorDelta}{0.16}
+\providecommand{\ftSaeSwap}{0.15}\providecommand{\ftCandorSwap}{0.17}
+\providecommand{\ftSaeRecon}{0.05}\providecommand{\ftCandorRecon}{0.08}
+\providecommand{\ftSaeLoss}{4.19}\providecommand{\ftCandorLoss}{4.23}
+\providecommand{\ftReconGain}{8}
 \IfFileExists{_numbers.tex}{\input{_numbers.tex}}{}
 
 \title{\textbf{The Explanation Is the Forward Pass:\\
@@ -101,9 +107,12 @@ concepts and mechanism, CANDOR recovers the planted concepts (mean correlation
 measurable interpretability tax, and passes held-out causal tests (\dirRel\%
 directional accuracy); a backdoor that bypasses the concept channel is exposed by a
 certificate spike (detection AUC \trojanAuc{}). The primitive composes with
-attention, and on the pretrained GPT-2 the certificate machinery transfers,
-although a \emph{frozen} retrofit does not favour CANDOR over a reconstruction-only
-SAE, evidence that the gains come from by-construction training. We are explicit
+attention. On the pretrained GPT-2 the certificate machinery transfers, but neither a
+\emph{frozen} retrofit nor single-layer fine-tuning favours CANDOR over a
+reconstruction-only SAE, and an $\approx\ftReconGain{}\times$ reconstruction
+improvement under fine-tuning fails to tighten the certificate: reconstruction and
+faithfulness dissociate, and full by-construction training remains the central open
+question. We are explicit
 about scope: these are small-scale demonstrations, and completeness is unattainable
 under computation in superposition; the contribution is to make the bypass
 \emph{measured, bounded, and certified}. All code and every measured number are
@@ -194,9 +203,11 @@ on synthetic tasks with known concepts and known mechanism, where soundness can 
 be checked, CANDOR recovers the concepts, certifies tightly at near-zero tax, passes a
 directional causal test, detects a channel-bypassing backdoor via a certificate spike, and
 composes with attention on a sequence task. On the pretrained GPT-2 we show the certificate
-machinery transfers to a real LLM \emph{and}, honestly, that a frozen retrofit does
-\emph{not} favour CANDOR over an SAE, which cleanly delimits the contribution to the
-by-construction regime. Every number is measured and released.
+machinery transfers to a real LLM \emph{and}, honestly, that neither a frozen retrofit nor
+single-layer fine-tuning favours CANDOR over an SAE, while an
+$\approx\ftReconGain{}\times$ reconstruction improvement fails to tighten the
+certificate, dissociating reconstruction from faithfulness and delimiting the
+contribution to the by-construction regime. Every number is measured and released.
 \end{enumerate}
 We do not claim to have solved interpretable AI. We claim a concrete,
 checkable mechanism that converts interpretability from an after-the-fact description
@@ -587,17 +598,48 @@ $\gptSaeSwap$ vs.\ $\gptCandorSwap$), and reconstructs better (unexplained varia
 $\gptSaeRecon$ vs.\ $\gptCandorRecon$), and this ordering is stable across loss
 weightings, so it is structural, not a tuning artefact.
 
-The reason is exactly the thesis of this paper. On a \emph{frozen} model the only lever
+The reason, we hypothesised, is the thesis of this paper. On a \emph{frozen} model the
+only lever
 that shrinks the leak is better reconstruction, precisely the SAE's objective. CANDOR's
 distinctive objectives (causal sufficiency, anchoring) assume the model can \emph{reshape
 its own computation} to route through the legible channel; a frozen retrofit cannot, so they
 only spend capacity. The favourable tax/faithfulness frontier of Experiments
 \ref{sec:planted}--\ref{sec:seq} comes from training the model \emph{with} the bottleneck,
 \emph{by construction}, not from the dictionary alone. This delimits the contribution
-cleanly: CANDOR is not a drop-in replacement for a post-hoc SAE, and the decisive real-LLM
-experiment is \emph{by-construction} training (or layer-wise fine-tuning) of a pretrained
-model so it can route through the channel, which exceeded the compute available for this
-study and which we therefore name as the central next step (\S\ref{sec:limits}).
+cleanly: CANDOR is not a drop-in replacement for a post-hoc SAE. It also yields a
+testable prediction: give the model room to reshape its computation and the behavioural
+and causal objectives should begin to pay. We test the smallest version of that
+prediction next.
+
+\paragraph{Layer-wise fine-tuning: a dissociation, and the prediction does not yet hold.}
+We unfreeze the spliced layer's MLP ($4.7$M of \gptParams{}M parameters) and fine-tune it
+jointly with the channel on the same text for \ftSteps{} steps, under the full
+language-modelling loss (which anchors capability), in two conditions matched in every
+respect (unfrozen parameters, steps, batch, seed, learning rates;
+Appendix~\ref{app:details}) except the channel objective: reconstruction only
+(\textbf{FT-SAE}) versus reconstruction $+$ behavioural faithfulness $+$ causal
+sufficiency (\textbf{FT-CANDOR}). Two findings. \emph{First, reconstruction and
+faithfulness dissociate.} Fine-tuning drives the control's unexplained variance from
+\gptSaeRecon{} to \ftSaeRecon{}, an $\approx\ftReconGain{}\times$ improvement, yet its
+certificate does not tighten ($\delta=\ftSaeDelta{}$, versus \gptSaeDelta{} for the
+frozen retrofit; both fine-tuned models also adapt to the corpus, from \ftOrigLoss{} to
+$\approx\ftSaeLoss{}$ validation loss, so frozen-to-fine-tuned numbers compare channels
+on different underlying models, while the within-regime comparisons are exactly
+matched). Near-perfect reconstruction buys no behavioural faithfulness, which is
+precisely the gap between reconstruction-style objectives and guarantees that motivates
+this paper. \emph{Second, the prediction does not hold at this scale.} At matched
+language-modelling loss (\ftCandorLoss{} vs.\ \ftSaeLoss{}), FT-CANDOR certifies
+\emph{less} tightly than the control ($\delta=\ftCandorDelta{}$ vs.\ \ftSaeDelta{}) and
+its leak is less inert (\ftCandorSwap{} vs.\ \ftSaeSwap{}). Reshaping a single MLP under
+a joint objective, at this budget and weighting, is not the regime in which the
+behavioural and causal signals win; we report this negative result at the same standard
+as the positives (single seed, single weighting, every number measured and released).
+The by-construction gains of Experiments \ref{sec:planted}--\ref{sec:seq} have therefore
+\emph{not yet} been reproduced on a pretrained model, by retrofitting or by local
+fine-tuning; the decisive experiment remains \emph{full} by-construction training,
+co-training the network with its bottlenecks from the start, which exceeds the compute
+available for this study and which we name as the central open question
+(\S\ref{sec:limits}).
 
 \begin{figure}[t]
 \centering
@@ -687,15 +729,19 @@ models, but moves the certificate from the model's \emph{outputs} to the model's
 \item \textbf{Scale, and the retrofit/by-construction gap.} Our positive evidence is on
 synthetic ground-truth tasks and a one-layer Transformer, \emph{not} a frontier LLM; we
 chose the regime where soundness can be \emph{checked}. On the real pretrained GPT-2
-(\S\ref{sec:gpt2}) the certificate \emph{machinery} transfers, but a \emph{frozen} retrofit
-does not favour CANDOR over a reconstruction-only SAE, because CANDOR's gains require the
-model to reshape its computation through the channel, which only \emph{by-construction}
-training provides. The single most important next experiment is therefore by-construction
-training (or layer-wise fine-tuning) of a pretrained LLM with the bottleneck, followed by a
+(\S\ref{sec:gpt2}) the certificate \emph{machinery} transfers, but neither a
+\emph{frozen} retrofit nor single-layer joint fine-tuning favours CANDOR over a
+reconstruction-only SAE, and under fine-tuning an $\approx\ftReconGain{}\times$
+reconstruction improvement fails to tighten the certificate. The hypothesis that
+CANDOR's gains require the model to reshape its computation through the channel has so
+far been tested only down to one layer's MLP, one seed and one loss weighting, and it
+did not hold there; it remains open beyond that regime. The single most important next
+experiment is therefore \emph{full} by-construction training of an LLM with its
+bottlenecks (plus a seed and weight sweep of the fine-tuning probe), followed by a
 frontier-scale evaluation (SAEBench, RAVEL, MIB, and a real backdoor-detection
-battery~\citep{karvonen2025saebench,huang2024ravel,mueller2025mib}); both are future work,
-not present claims. Whether the favourable tax/legibility frontier persists at scale is the
-central open empirical question.
+battery~\citep{karvonen2025saebench,huang2024ravel,mueller2025mib}); these are future
+work, not present claims. Whether the favourable tax/legibility frontier persists at
+scale is the central open empirical question.
 \item \textbf{No completeness.} By Rem.~\ref{rem:incomplete} we do not and cannot claim
 the certificate reaches zero on arbitrary computation; we claim it is sound, measured,
 and trainable, and that a large $\delta$ is an honest abstention signal.
@@ -859,6 +905,27 @@ legible-spliced next-token distributions on held-out text; the leak-swap effect 
 same quantity against the leak-swapped splice; unexplained variance is residual energy
 over output energy; the loss-recovered fraction compares the legible splice's language
 modelling loss against the full model and a zero-ablated MLP.
+
+\subsection{GPT-2 layer-wise fine-tuning (\S\ref{sec:gpt2})}
+\textbf{Setup.} Same model, layer, corpus, tokenisation, and $85/15$ split as the
+frozen retrofit. The MLP of the spliced layer ($4.7$M parameters) is unfrozen; all
+other model parameters stay frozen. The model is kept in evaluation mode throughout, so
+dropout is off (evaluation mode does not block gradients).
+
+\textbf{Conditions.} Both conditions train the channel ($m=\gptDictM$, $k=\gptTopK$)
+jointly with the unfrozen MLP for \ftSteps{} steps (Adam; channel learning rate
+$2\times10^{-3}$, MLP learning rate $10^{-4}$; batch $12$; seed $0$) under the full
+language-modelling cross-entropy over all positions, which anchors capability, plus the
+normalised reconstruction loss with a \emph{live} (non-detached) target, so in both
+conditions the MLP may reshape its output toward reconstructability. The FT-CANDOR
+condition adds the behavioural faithfulness term (KL between the spliced legible
+model's next-token distribution and the current full model's) and the
+causal-sufficiency term (total variation against the leak-swapped splice), each with
+weight $1.0$; FT-SAE adds nothing. Matched step counts mean FT-CANDOR spends roughly
+three forward passes per step to FT-SAE's one, as in the frozen comparison. Evaluation
+is identical to the frozen experiment, and the original model's validation loss
+(\ftOrigLoss{}) is reported as the capability reference. This is a single-seed,
+single-weighting probe, stated as such in \S\ref{sec:gpt2}.
 
 \subsection{Compute}
 All experiments run on a single commodity machine; no data-centre resources are used.

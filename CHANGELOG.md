@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.2.0 (2026-07-02)
+
+### Added
+- `experiments/exp_gpt2_ft.py`: the layer-wise by-construction fine-tuning probe on
+  GPT-2 that the paper previously named as the next step. Unfreezes the spliced layer's
+  MLP (4.7M parameters) and trains it jointly with the channel under a
+  capability-anchoring LM loss, in two matched conditions (reconstruction-only vs.
+  reconstruction + behavioural faithfulness + causal sufficiency). Auto-selects a CUDA
+  device with a probe (about 1 GB peak) and falls back to CPU.
+- `results/gpt2_ft.json` plus the corresponding auto-generated paper macros; new paper
+  paragraph in section 7.4, updated abstract and limitations, and an appendix
+  subsection documenting the protocol.
+
+### Findings (single seed, single weighting; reported as measured)
+- Reconstruction and faithfulness dissociate: fine-tuning improves the control
+  channel's reconstruction about 8x (unexplained variance 0.375 to 0.046) yet its
+  certificate does not tighten (delta 0.114 frozen to 0.128 fine-tuned).
+- The by-construction prediction does not hold at single-layer scale: FT-CANDOR
+  certifies less tightly than the matched control (delta 0.156 vs 0.128) at matched LM
+  loss. Reported as a negative result; full by-construction training remains the open
+  question.
+
+### Fixed
+- `exp_gpt2.py`: the leak-swap permutation is now created on the activation's device,
+  which is required for CUDA runs.
+
 ## v1.1.0 (2026-07-02)
 
 Submission-readiness revision of the paper and supporting polish; no experimental
