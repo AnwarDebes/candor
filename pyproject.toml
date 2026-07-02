@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "candorkit"
-version = "1.0.0"
-description = "CANDOR: interpretability by construction for AGI via certified Legible Bottlenecks"
+version = "1.1.0"
+description = "CANDOR: interpretability by construction via certified Legible Bottlenecks"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Anwar Debes", email = "148064413+AnwarDebes@users.noreply.github.com" }]
 keywords = ["interpretability", "mechanistic-interpretability", "AI-safety",
-            "concept-bottleneck", "sparse-autoencoder", "AGI", "certification"]
+            "concept-bottleneck", "sparse-autoencoder", "faithfulness", "certification"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",

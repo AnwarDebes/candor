@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="CANDOR: The Way Toward Interpretable AGI" width="100%"/>
+<img src="assets/banner.svg" alt="CANDOR: The Explanation Is the Forward Pass" width="100%"/>
 
 <br/>
 
@@ -58,7 +58,7 @@ interpretability can be *checked* rather than asserted, CANDOR:
 |---|---|
 | Interpretability tax (legible vs. opaque accuracy) | **none measurable** |
 | Faithfulness certificate `δ` (mean) | **≈0.002** (99.9% model/explanation agreement) |
-| Concept recovery vs. ground truth | **0.92** (matches a post-hoc SAE) |
+| Concept recovery vs. ground truth | **0.92** (comparable to a post-hoc SAE at 0.97) |
 | Causal necessity gap (relevant vs. irrelevant ablation) | **≈0.77** |
 | Directional causal accuracy (held-out interventions) | **≈0.82** |
 | Backdoor (channel-bypass) detection by `δ` | **AUC ≈0.90** |
@@ -114,7 +114,7 @@ print(cert.active_concepts[0])                                  # the named expl
 | `candorkit/metrics.py` | ground-truth checks: concept recovery, causal necessity, stability |
 | `experiments/` | planted concepts, the tax/legibility frontier, a sequence (attention) task |
 | `scripts/` | results to paper numbers, results to figures |
-| `paper/candor.tex` | the paper, *The Way Toward Interpretable AGI* |
+| `paper/candor.tex` | the paper, *The Explanation Is the Forward Pass: Interpretability by Construction with Certified Legible Bottlenecks* |
 
 ## The Faithfulness Certificate
 
@@ -150,11 +150,12 @@ conjunction, operating jointly and at runtime.**
 
 ```bibtex
 @misc{debes2026candor,
-  title  = {The Way Toward Interpretable AGI: Routing Computation Through
-            Certified Legible Bottlenecks},
+  title  = {The Explanation Is the Forward Pass: Interpretability by
+            Construction with Certified Legible Bottlenecks},
   author = {Debes, Anwar},
   year   = {2026},
-  note   = {Reference implementation, v1.0 (CANDOR)}
+  url    = {https://github.com/AnwarDebes/candor},
+  note   = {Preprint. Reference implementation (CANDOR)}
 }
 ```
 

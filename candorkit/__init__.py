@@ -5,7 +5,8 @@ output-relevant computation is routed through Legible Bottlenecks (sparse, typed
 persistently-named concept channels) and which emits, at every forward pass, a
 checkable Faithfulness Certificate bounding its non-legible ("dark") computation.
 
-See the paper in ``paper/candor.tex`` ("The Way Toward Interpretable AGI").
+See the paper in ``paper/candor.tex`` ("The Explanation Is the Forward Pass:
+Interpretability by Construction with Certified Legible Bottlenecks").
 """
 from .bottleneck import BottleneckOutput, LegibleBottleneck, topk_mask
 from .certificate import Certificate, certify
@@ -18,7 +19,7 @@ from .model import LegibleMLP, LegibleTransformer, OpaqueMLP
 from .train import (TrainConfig, device_auto, fit_sae, sae_codes, train_candor,
                     train_opaque)
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "LegibleBottleneck", "BottleneckOutput", "topk_mask",

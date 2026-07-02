@@ -1,5 +1,34 @@
 # Changelog
 
+## v1.1.0 (2026-07-02)
+
+Submission-readiness revision of the paper and supporting polish; no experimental
+results changed, and `paper/_numbers.tex` still regenerates byte-identical from the
+committed `results/*.json`.
+
+### Paper
+- Retitled to *The Explanation Is the Forward Pass: Interpretability by Construction
+  with Certified Legible Bottlenecks* (the previous working title overclaimed scope).
+- Added the author block with affiliation and contact, keywords, a reproducibility
+  statement, and an experimental-details appendix (every architecture, hyperparameter,
+  seed, and loss weight, matching the released code exactly).
+- Tightened the abstract, moved the text to standard editorial voice, and added proof
+  sketches to all propositions.
+- Corrected two claim/measurement mismatches found in internal review: the necessity
+  gap is measured by ablating the relevant concepts' atoms jointly (versus an equal
+  number of irrelevant atoms), and the post-hoc SAE's concept recovery is reported as
+  slightly higher than CANDOR's rather than "the same".
+- Bibliography: protected proper nouns from lowercasing; fixed a venue-less entry.
+
+### Code and figures
+- `scripts/make_figures.py`: the backdoor-detection histogram now uses log-scaled
+  axes, so the clean/triggered separation is actually visible.
+- `candorkit/certificate.py`: docstring corrected. Total variation bounds event
+  probabilities of the sampled output; it does not by itself bound argmax
+  disagreement, which is why `agreement` is reported as a separate measured quantity.
+- `candorkit/metrics.py`: removed dead helpers (`model_decode`, `rerun_from_site`);
+  clarified the necessity-test docstring.
+
 ## v1.0.0 (2026-06-25)
 
 First public release of **CANDOR** (Concept-ANchored Disentangled Output Routing) and the
