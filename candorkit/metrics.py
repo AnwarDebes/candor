@@ -85,13 +85,14 @@ def task_accuracy(model, x, y, mode="full", batch_size=4096):
 @torch.no_grad()
 def causal_faithfulness(model, x, true_concepts, relevant, codes=None,
                         site: int = -1, n_eval: int = 1000):
-    """Does ablating the concept that *encodes a label-relevant feature* change
-    the decision more than ablating an irrelevant one?
+    """Does ablating the concepts that *encode label-relevant features* change
+    the decision more than ablating irrelevant ones?
 
-    I map each relevant ground-truth concept to its best-matched atom, ablate
-    that atom (zero its code), and measure how often the legible decision flips,
-    versus ablating a random label-irrelevant atom.  A faithful, causal channel
-    has a large necessity gap (relevant >> irrelevant).
+    Each relevant ground-truth concept is mapped to its best-matched atom; those
+    atoms are ablated (codes zeroed) and the legible decision-flip rate is
+    measured, versus ablating an equal number of randomly chosen label-irrelevant
+    atoms.  A faithful, causal channel has a large necessity gap
+    (relevant >> irrelevant).
     """
     model.eval()
     dev = _dev(model)
@@ -124,28 +125,6 @@ def causal_faithfulness(model, x, true_concepts, relevant, codes=None,
     irr_flip = flip_rate_after_ablating(irr_sample)
     return {"necessity_relevant": rel_flip, "necessity_irrelevant": irr_flip,
             "necessity_gap": rel_flip - irr_flip}
-
-
-# --- helpers for ablation re-runs (single-site MLP) ---
-def model_decode(model, site, code):
-    bn = _site_bottleneck(model, site)
-    return bn.decode(code)
-
-
-@torch.no_grad()
-def rerun_from_site(model, x, site, recon):
-    """Re-run an MLP from a bottleneck site using a supplied (ablated) recon.
-    Implemented for the single-bottleneck MLP used in the planted experiment."""
-    import torch.nn.functional as F
-    if hasattr(model, "out") and hasattr(model, "in_proj"):
-        return model.out(recon)
-    raise NotImplementedError("rerun_from_site supports the 1-hidden LegibleMLP")
-
-
-def _site_bottleneck(model, site):
-    if hasattr(model, "bottlenecks"):
-        return model.bottlenecks[site]
-    return model.blocks[site].bottleneck
 
 
 def stability(codes_a, codes_b, true_concepts):

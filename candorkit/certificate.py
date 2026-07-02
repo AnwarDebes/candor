@@ -10,11 +10,13 @@ total-variation distance between their output distributions,
 Proposition (soundness, by construction).  Because ``M_leg``'s output depends on
 ``x`` *only* through the named concept codes, ``delta(x)`` is an exact, per-input
 upper bound on the influence of all non-legible ("dark") computation on the
-decision: for any bounded test of the output, the deployed model and the
-named-concept explanation agree to within ``delta(x)``.  In particular the top-1
-decision can differ with probability at most ``delta(x)``.  The bound is a
-*measurement*, not an estimate, and is re-checkable by anyone by re-running
-``M_leg``, which is what makes it a certificate rather than a heuristic score.
+output distribution: for every event over outputs, the deployed model and the
+named-concept explanation assign probabilities within ``delta(x)`` of each other.
+(Note this bounds probabilities of the *sampled* output; it does not by itself
+bound top-1/argmax disagreement, which is why ``agreement`` is reported
+separately as a measured quantity.)  The bound is a *measurement*, not an
+estimate, and is re-checkable by anyone by re-running ``M_leg``, which is what
+makes it a certificate rather than a heuristic score.
 
 Training drives ``delta`` small (via the faithfulness, leak and causal terms);
 the certificate reports, per input, how small it actually is.

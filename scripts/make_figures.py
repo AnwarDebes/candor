@@ -55,15 +55,21 @@ def fig_trojan():
     if not d or "delta_clean_sample" not in d.get("trojan", {}):
         return
     t = d["trojan"]
-    clean = np.array(t["delta_clean_sample"])
-    troj = np.array(t["delta_trojan_sample"])
+    # delta spans orders of magnitude (clean ~1e-4, triggered up to ~1e-1), so plot on
+    # log-spaced bins; a linear axis crushes both distributions into the first bin.
+    floor = 1e-6
+    clean = np.clip(np.array(t["delta_clean_sample"]), floor, None)
+    troj = np.clip(np.array(t["delta_trojan_sample"]), floor, None)
     fig, ax = plt.subplots(figsize=(5.2, 3.4))
-    hi = max(clean.max(), troj.max()) + 1e-3
-    bins = np.linspace(0, hi, 40)
-    ax.hist(clean, bins=bins, color=TEAL, alpha=0.7, label="clean inputs", density=True)
-    ax.hist(troj, bins=bins, color=RUST, alpha=0.7, label="trojan-triggered", density=True)
-    ax.set_xlabel(r"per-input certificate $\delta(x)$")
-    ax.set_ylabel("density")
+    lo = min(clean.min(), troj.min())
+    hi = max(clean.max(), troj.max()) * 1.2
+    bins = np.geomspace(lo, hi, 40)
+    ax.hist(clean, bins=bins, color=TEAL, alpha=0.7, label="clean inputs")
+    ax.hist(troj, bins=bins, color=RUST, alpha=0.7, label="trojan-triggered")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlabel(r"per-input certificate $\delta(x)$ (log scale)")
+    ax.set_ylabel("count (log scale)")
     ax.legend(fontsize=9)
     ax.set_title(f"Dark-computation detection (AUC = {t['auc_delta_detects_trojan']:.3f})")
     plt.savefig(os.path.join(FIG, "trojan_detection.pdf"))
