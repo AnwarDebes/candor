@@ -163,6 +163,132 @@ class LegibleTransformer(nn.Module):
             blk.bottleneck.update_anchor(momentum)
 
 
+class LegibleLMTransformer(nn.Module):
+    """A decoder-only language model routed through Legible Bottlenecks: the
+    by-construction setting, where the network is trained *with* its concept
+    channels from the first step rather than retrofitted.
+
+    Same routing contract as ``LegibleTransformer`` (modes full / legible /
+    leak-swap, one bottleneck on every MLP hidden state, ``model.sites``
+    populated after each forward), but the readout is a language model: logits
+    at *every* position, so the certificate and the behavioural objectives
+    cover the whole emitted distribution, not a single classification head.
+
+    ``sites`` (an optional set of block indices) restricts the non-full
+    routing to a subset of bottleneck sites; blocks outside it pass through
+    unchanged.  This is used to compare like with like against a single-site
+    post-hoc splice.
+    """
+
+    def __init__(self, vocab: int, seq_len: int, d_model: int = 256,
+                 n_heads: int = 4, d_mlp: int = 1024, n_layers: int = 4,
+                 m: int = 1024, k: int = 32):
+        super().__init__()
+        self.tok = nn.Embedding(vocab, d_model)
+        self.pos = nn.Embedding(seq_len, d_model)
+        self.blocks = nn.ModuleList(
+            _Block(d_model, n_heads, d_mlp, m, k) for _ in range(n_layers)
+        )
+        self.ln_f = nn.LayerNorm(d_model)
+        self.unembed = nn.Linear(d_model, vocab)
+        self.seq_len = seq_len
+        self.sites: list[BottleneckOutput] = []
+        mask = torch.triu(torch.full((seq_len, seq_len), float("-inf")), diagonal=1)
+        self.register_buffer("causal_mask", mask)
+
+    def forward(self, idx, mode: str = "full", leak_swap: bool = False,
+                sites: set[int] | None = None):
+        self.sites = []
+
+        def route(bn, h):
+            i = len(self.sites)
+            on = sites is None or i in sites
+            return _route(bn, h, mode if on else "full", leak_swap and on)
+
+        B, T = idx.shape
+        pos = torch.arange(T, device=idx.device)
+        x = self.tok(idx) + self.pos(pos)[None]
+        for blk in self.blocks:
+            x, bo = blk(x, self.causal_mask[:T, :T], route)
+            self.sites.append(bo)
+        x = self.ln_f(x)
+        return self.unembed(x)  # (B, T, vocab): next-token logits everywhere
+
+    def maintain(self, momentum: float = 0.99):
+        for blk in self.blocks:
+            blk.bottleneck.normalize_decoder()
+            blk.bottleneck.update_anchor(momentum)
+
+    @torch.no_grad()
+    def load_opaque(self, opaque: "OpaqueLMTransformer"):
+        """Copy an ``OpaqueLMTransformer``'s weights into this model (the two
+        share every parameter name except the bottlenecks), so a post-hoc SAE
+        can be spliced into a frozen opaque model via the legible routing
+        modes.  In mode='full' the two models are then exactly identical."""
+        missing, unexpected = self.load_state_dict(opaque.state_dict(), strict=False)
+        assert not unexpected, unexpected
+        assert all(".bottleneck." in name for name in missing), missing
+        return self
+
+
+class _OpaqueBlock(nn.Module):
+    """One pre-norm Transformer block of identical shape to ``_Block`` but
+    with no bottleneck; the MLP hidden state is exposed for post-hoc SAE
+    fitting."""
+
+    def __init__(self, d_model: int, n_heads: int, d_mlp: int):
+        super().__init__()
+        self.ln1 = nn.LayerNorm(d_model)
+        self.attn = nn.MultiheadAttention(d_model, n_heads, batch_first=True)
+        self.ln2 = nn.LayerNorm(d_model)
+        self.fc1 = nn.Linear(d_model, d_mlp)
+        self.fc2 = nn.Linear(d_mlp, d_model)
+
+    def forward(self, x, attn_mask):
+        a, _ = self.attn(self.ln1(x), self.ln1(x), self.ln1(x),
+                         attn_mask=attn_mask, need_weights=False)
+        x = x + a
+        h = F.relu(self.fc1(self.ln2(x)))
+        x = x + self.fc2(h)
+        return x, h
+
+
+class OpaqueLMTransformer(nn.Module):
+    """The opaque twin of ``LegibleLMTransformer``: identical architecture and
+    parameter shapes, no bottlenecks.  It is the capability reference (what
+    the task costs without any legibility constraint) and the substrate for
+    the post-hoc pipeline: ``forward(idx, keep_hidden=True)`` stores each
+    block's MLP hidden state (flattened to rows) in ``self.hidden`` for SAE
+    fitting."""
+
+    def __init__(self, vocab: int, seq_len: int, d_model: int = 256,
+                 n_heads: int = 4, d_mlp: int = 1024, n_layers: int = 4):
+        super().__init__()
+        self.tok = nn.Embedding(vocab, d_model)
+        self.pos = nn.Embedding(seq_len, d_model)
+        self.blocks = nn.ModuleList(
+            _OpaqueBlock(d_model, n_heads, d_mlp) for _ in range(n_layers)
+        )
+        self.ln_f = nn.LayerNorm(d_model)
+        self.unembed = nn.Linear(d_model, vocab)
+        self.seq_len = seq_len
+        self.hidden: list[torch.Tensor] = []
+        mask = torch.triu(torch.full((seq_len, seq_len), float("-inf")), diagonal=1)
+        self.register_buffer("causal_mask", mask)
+
+    def forward(self, idx, keep_hidden: bool = False):
+        self.hidden = []
+        B, T = idx.shape
+        pos = torch.arange(T, device=idx.device)
+        x = self.tok(idx) + self.pos(pos)[None]
+        for blk in self.blocks:
+            x, h = blk(x, self.causal_mask[:T, :T])
+            if keep_hidden:
+                self.hidden.append(h.reshape(B * T, -1))
+        x = self.ln_f(x)
+        return self.unembed(x)
+
+
 class OpaqueMLP(nn.Module):
     """Identical capacity and shape to ``LegibleMLP`` but with no bottleneck --
     the baseline whose internals one would have to interpret *post hoc* (e.g. by

@@ -1,7 +1,7 @@
 # CANDOR: reproduce everything
 PY ?= python
 
-.PHONY: help install test experiments planted seq tax numbers figures paper all clean
+.PHONY: help install test experiments planted seq gpt2 gpt2_ft gpt2_ft_sweep lm_scratch tax numbers figures paper all clean
 
 help:
 	@echo "make install      - editable install with experiment + dev extras"
@@ -27,6 +27,12 @@ seq:
 	$(PY) experiments/exp_seq.py
 gpt2:
 	$(PY) experiments/exp_gpt2.py    # needs: pip install -e ".[llm]"  (+ ~0.5GB download)
+gpt2_ft:
+	$(PY) experiments/exp_gpt2_ft.py
+gpt2_ft_sweep:
+	$(PY) experiments/exp_gpt2_ft_sweep.py
+lm_scratch:
+	$(PY) experiments/exp_lm_scratch.py
 tax:
 	$(PY) experiments/tax_curve.py
 

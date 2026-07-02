@@ -21,11 +21,16 @@ ALL = {
     "tax": tax_curve.main,
     "seq": exp_seq.main,
 }
-# The GPT-2 experiments need the optional `transformers` extra and a ~0.5 GB model
-# download, so they are excluded from the default run; invoke them explicitly:
-#   python experiments/run_all.py gpt2       (or  python experiments/exp_gpt2.py)
-#   python experiments/run_all.py gpt2_ft    (layer-wise fine-tuning probe)
+# The LLM experiments need the optional `transformers` extra and downloads
+# (GPT-2 weights or tokeniser, TinyShakespeare), so they are excluded from the
+# default run; invoke them explicitly:
+#   python experiments/run_all.py gpt2           (or  python experiments/exp_gpt2.py)
+#   python experiments/run_all.py gpt2_ft        (layer-wise fine-tuning probe)
+#   python experiments/run_all.py gpt2_ft_sweep  (seed/weighting sweep of the probe)
+#   python experiments/run_all.py lm_scratch     (by-construction LM training)
 DEFAULT = ["planted", "tax", "seq"]
+
+EXPLICIT = ["gpt2", "gpt2_ft", "gpt2_ft_sweep", "lm_scratch"]
 
 
 def main(which=None):
@@ -38,11 +43,17 @@ def main(which=None):
         elif name == "gpt2_ft":
             from experiments import exp_gpt2_ft
             exp_gpt2_ft.main()
+        elif name == "gpt2_ft_sweep":
+            from experiments import exp_gpt2_ft_sweep
+            exp_gpt2_ft_sweep.main()
+        elif name == "lm_scratch":
+            from experiments import exp_lm_scratch
+            exp_lm_scratch.main()
         else:
             ALL[name]()
 
 
 if __name__ == "__main__":
-    valid = set(ALL) | {"gpt2", "gpt2_ft"}
+    valid = set(ALL) | set(EXPLICIT)
     args = [a for a in sys.argv[1:] if a in valid]
     main(args or None)

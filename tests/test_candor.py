@@ -80,3 +80,40 @@ def test_modular_addition_shapes():
     assert d.X.shape == (121, 3) and d.vocab == 12
     a, b = d.X[:, 0], d.X[:, 1]
     assert torch.equal(d.y, (a + b) % 11)
+
+
+def test_lm_transformer_full_mode_matches_opaque_twin():
+    """In mode='full' the legible LM must equal its opaque twin exactly, and at
+    every site recon + leak must reconstruct the twin's true hidden state."""
+    torch.manual_seed(0)
+    leg = ck.LegibleLMTransformer(vocab=50, seq_len=12, d_model=32, n_heads=4,
+                                  d_mlp=64, n_layers=2, m=48, k=4)
+    opq = ck.OpaqueLMTransformer(vocab=50, seq_len=12, d_model=32, n_heads=4,
+                                 d_mlp=64, n_layers=2)
+    leg.load_opaque(opq)
+    idx = torch.randint(0, 50, (3, 12))
+    lo_leg = leg(idx, mode="full")
+    lo_opq = opq(idx, keep_hidden=True)
+    assert lo_leg.shape == (3, 12, 50)
+    assert torch.allclose(lo_leg, lo_opq, atol=1e-5)
+    assert len(leg.sites) == len(opq.hidden) == 2
+    for site, h in zip(leg.sites, opq.hidden):
+        assert torch.allclose(site.recon + site.leak, h, atol=1e-5)
+        assert (site.code > 0).sum(-1).max().item() <= 4
+
+
+def test_lm_loss_and_site_restricted_routing():
+    torch.manual_seed(1)
+    model = ck.LegibleLMTransformer(vocab=30, seq_len=8, d_model=16, n_heads=2,
+                                    d_mlp=32, n_layers=2, m=24, k=3)
+    idx = torch.randint(0, 30, (4, 8))
+    lb = ck.candor_lm_loss(model, idx, ck.LossWeights())
+    assert torch.isfinite(lb.total)
+    assert set(lb.parts) >= {"task", "task_leg", "faith", "leak", "causal",
+                             "anchor", "sparse"}
+    leg = model(idx, mode="legible")
+    assert leg.shape == (4, 8, 30)
+    # restricting the legible routing to no sites reproduces the full model
+    full = model(idx, mode="full")
+    same = model(idx, mode="legible", sites=set())
+    assert torch.allclose(full, same, atol=1e-6)

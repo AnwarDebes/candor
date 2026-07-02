@@ -12,10 +12,12 @@ from .bottleneck import BottleneckOutput, LegibleBottleneck, topk_mask
 from .certificate import Certificate, certify
 from .data import (ModAddData, PlantedData, SeqData, modular_addition,
                    planted_concepts, sequence_max, split, trojan_concepts)
-from .losses import LossBreakdown, LossWeights, candor_loss, leak_energy
+from .losses import (LossBreakdown, LossWeights, candor_lm_loss, candor_loss,
+                     leak_energy, lm_cross_entropy)
 from .metrics import (causal_faithfulness, concept_activations, concept_recovery,
                       stability, task_accuracy)
-from .model import LegibleMLP, LegibleTransformer, OpaqueMLP
+from .model import (LegibleLMTransformer, LegibleMLP, LegibleTransformer,
+                    OpaqueLMTransformer, OpaqueMLP)
 from .train import (TrainConfig, device_auto, fit_sae, sae_codes, train_candor,
                     train_opaque)
 
@@ -24,7 +26,9 @@ __version__ = "1.2.0"
 __all__ = [
     "LegibleBottleneck", "BottleneckOutput", "topk_mask",
     "LegibleMLP", "LegibleTransformer", "OpaqueMLP",
-    "candor_loss", "LossWeights", "LossBreakdown", "leak_energy",
+    "LegibleLMTransformer", "OpaqueLMTransformer",
+    "candor_loss", "candor_lm_loss", "lm_cross_entropy",
+    "LossWeights", "LossBreakdown", "leak_energy",
     "certify", "Certificate",
     "planted_concepts", "trojan_concepts", "modular_addition", "sequence_max", "split",
     "PlantedData", "ModAddData", "SeqData",

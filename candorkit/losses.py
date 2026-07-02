@@ -127,3 +127,57 @@ def candor_loss(model, x, y, w: LossWeights,
         "causal": float(l_causal.detach()), "anchor": float(l_anchor.detach()),
         "sparse": float(l_sparse.detach()),
     })
+
+
+def lm_cross_entropy(logits, idx):
+    """Next-token cross-entropy over all positions of a (B, T, V) LM output."""
+    return F.cross_entropy(logits[:, :-1].reshape(-1, logits.shape[-1]),
+                           idx[:, 1:].reshape(-1))
+
+
+def candor_lm_loss(model, idx, w: LossWeights) -> LossBreakdown:
+    """The CANDOR objective for a next-token language model
+    (``LegibleLMTransformer``): the same conjunction as ``candor_loss`` with
+
+      * the task terms replaced by next-token cross-entropy over all positions,
+      * faithfulness = KL(full || legible) between next-token distributions,
+        averaged over every position, and
+      * causal = TV(full, leak-swapped), averaged over every position,
+
+    so the behavioural guarantees cover the model's entire emitted
+    distribution rather than a single readout.  Runs three forward passes
+    (full, legible, leak-swapped), exactly as ``candor_loss``."""
+    logits_full = model(idx, mode="full")               # (B, T, V)
+    sites_full = list(model.sites)
+
+    logits_leg = model(idx, mode="legible")
+    logits_swap = model(idx, mode="full", leak_swap=True)
+
+    V = logits_full.shape[-1]
+    l_task = lm_cross_entropy(logits_full, idx)
+    l_task_leg = lm_cross_entropy(logits_leg, idx)
+    l_faith = F.kl_div(
+        F.log_softmax(logits_leg, dim=-1).reshape(-1, V),
+        F.softmax(logits_full.detach(), dim=-1).reshape(-1, V),
+        reduction="batchmean",
+    )
+    l_causal = _tv(logits_full.detach().reshape(-1, V),
+                   logits_swap.reshape(-1, V)).mean()
+    l_leak = leak_energy(sites_full)
+    l_anchor = anchor_drift(model)
+    l_sparse = code_l1(sites_full)
+
+    total = (l_task
+             + w.legible_task * l_task_leg
+             + w.faith * l_faith
+             + w.leak * l_leak
+             + w.causal * l_causal
+             + w.anchor * l_anchor
+             + w.sparse * l_sparse)
+
+    return LossBreakdown(total=total, parts={
+        "task": float(l_task.detach()), "task_leg": float(l_task_leg.detach()),
+        "faith": float(l_faith.detach()), "leak": float(l_leak.detach()),
+        "causal": float(l_causal.detach()), "anchor": float(l_anchor.detach()),
+        "sparse": float(l_sparse.detach()),
+    })
