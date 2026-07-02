@@ -133,6 +133,60 @@ def main():
             gain = fz["sae"]["recon_unexplained"] / max(1e-6, s["recon_unexplained"])
             cmd("ftReconGain", f"{gain:.0f}")
 
+    sweep = load("gpt2_ft_sweep.json")
+    if sweep:
+        sm = sweep["summary"]
+        cmd("ftSweepSeeds", len(sweep["seeds"]))
+        cmd("ftSweepSaeDelta", f4(sm["ft_sae"]["delta"]["mean"]))
+        cmd("ftSweepSaeDeltaStd", f4(sm["ft_sae"]["delta"]["std"]))
+        cmd("ftSweepSaeSwap", f4(sm["ft_sae"]["leak_swap"]["mean"]))
+        cmd("ftSweepSaeLoss", f3(sm["ft_sae"]["loss_full"]["mean"]))
+        suffixes = ("Low", "Mid", "High")
+        for w, suff in zip((str(x) for x in sweep["weightings"]), suffixes):
+            c = sm["ft_candor"][w]
+            cmd(f"ftSweepWeight{suff}", w)
+            cmd(f"ftSweepCandorDelta{suff}", f4(c["delta"]["mean"]))
+            cmd(f"ftSweepCandorDelta{suff}Std", f4(c["delta"]["std"]))
+            cmd(f"ftSweepCandorSwap{suff}", f4(c["leak_swap"]["mean"]))
+            cmd(f"ftSweepCandorLoss{suff}", f3(c["loss_full"]["mean"]))
+        best = min(sm["ft_candor"].values(), key=lambda c: c["delta"]["mean"])
+        cmd("ftSweepCandorDeltaBest", f4(best["delta"]["mean"]))
+
+    lm = load("lm_scratch.json")
+    if lm:
+        cfg, sm = lm["config"], lm["summary"]
+        cmd("lmLayers", cfg["n_layers"]); cmd("lmDModel", cfg["d_model"])
+        cmd("lmHeads", cfg["n_heads"]); cmd("lmDMlp", cfg["d_mlp"])
+        cmd("lmDictM", cfg["m"]); cmd("lmTopK", cfg["k"])
+        cmd("lmSeqLen", cfg["seq_len"]); cmd("lmSteps", cfg["steps"])
+        cmd("lmBatch", cfg["batch"]); cmd("lmSeeds", len(lm["seeds"]))
+        cmd("lmTrainSeqs", lm["n_train"]); cmd("lmValSeqs", lm["n_val"])
+        cmd("lmOpaqueLoss", f3(sm["opaque_loss_full"]["mean"]))
+        cmd("lmOpaqueLossStd", f3(sm["opaque_loss_full"]["std"]))
+        for cond, suff in (("recon", "Recon"), ("candor", "Candor"),
+                           ("sae_final", "SaeFinal"), ("sae_all", "SaeAll")):
+            s = sm[cond]
+            cmd(f"lm{suff}Delta", f4(s["delta"]["mean"]))
+            cmd(f"lm{suff}DeltaStd", f4(s["delta"]["std"]))
+            cmd(f"lm{suff}Swap", f4(s["leak_swap"]["mean"]))
+            cmd(f"lm{suff}SwapStd", f4(s["leak_swap"]["std"]))
+            cmd(f"lm{suff}LegLoss", f3(s["loss_legible"]["mean"]))
+            cmd(f"lm{suff}Agree", pct(s["agreement"]["mean"]))
+            cmd(f"lm{suff}Recon", f3(s["recon_unexplained"]["mean"]))
+        for cond, suff in (("recon", "Recon"), ("candor", "Candor")):
+            vals = [r[cond]["final_site"]["delta"] for r in lm["runs"].values()]
+            cmd(f"lm{suff}FinalDelta", f4(sum(vals) / len(vals)))
+        cmd("lmReconLoss", f3(sm["recon"]["loss_full"]["mean"]))
+        cmd("lmCandorLoss", f3(sm["candor"]["loss_full"]["mean"]))
+        cmd("lmCandorTax", f3(sm["candor_tax"]["mean"]))
+        cmd("lmCandorTaxStd", f3(sm["candor_tax"]["std"]))
+        cmd("lmReconTax", f3(sm["recon_tax"]["mean"]))
+        cmd("lmCandorTaxPct", f"{100 * sm['candor_tax']['mean'] / sm['opaque_loss_full']['mean']:.1f}")
+        ratio = sm["recon"]["delta"]["mean"] / max(1e-6, sm["candor"]["delta"]["mean"])
+        cmd("lmDeltaRatio", f"{ratio:.1f}")
+        swap_ratio = sm["recon"]["leak_swap"]["mean"] / max(1e-6, sm["candor"]["leak_swap"]["mean"])
+        cmd("lmSwapRatio", f"{swap_ratio:.1f}")
+
     with open(OUT, "w") as f:
         f.write("\n".join(lines) + "\n")
     n = sum(1 for l in lines if l.startswith("\\renewcommand"))

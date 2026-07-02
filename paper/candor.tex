@@ -64,6 +64,44 @@
 \providecommand{\ftSaeRecon}{0.05}\providecommand{\ftCandorRecon}{0.08}
 \providecommand{\ftSaeLoss}{4.19}\providecommand{\ftCandorLoss}{4.23}
 \providecommand{\ftReconGain}{8}
+\providecommand{\ftSweepSeeds}{3}
+\providecommand{\ftSweepSaeDelta}{0.13}\providecommand{\ftSweepSaeDeltaStd}{0.01}
+\providecommand{\ftSweepSaeSwap}{0.15}\providecommand{\ftSweepSaeLoss}{4.2}
+\providecommand{\ftSweepWeightLow}{0.3}\providecommand{\ftSweepWeightMid}{1.0}
+\providecommand{\ftSweepWeightHigh}{3.0}
+\providecommand{\ftSweepCandorDeltaLow}{0.15}\providecommand{\ftSweepCandorDeltaLowStd}{0.01}
+\providecommand{\ftSweepCandorSwapLow}{0.17}\providecommand{\ftSweepCandorLossLow}{4.2}
+\providecommand{\ftSweepCandorDeltaMid}{0.15}\providecommand{\ftSweepCandorDeltaMidStd}{0.01}
+\providecommand{\ftSweepCandorSwapMid}{0.17}\providecommand{\ftSweepCandorLossMid}{4.2}
+\providecommand{\ftSweepCandorDeltaHigh}{0.15}\providecommand{\ftSweepCandorDeltaHighStd}{0.01}
+\providecommand{\ftSweepCandorSwapHigh}{0.17}\providecommand{\ftSweepCandorLossHigh}{4.2}
+\providecommand{\ftSweepCandorDeltaBest}{0.15}
+\providecommand{\lmLayers}{4}\providecommand{\lmDModel}{256}\providecommand{\lmHeads}{4}
+\providecommand{\lmDMlp}{1024}\providecommand{\lmDictM}{1024}\providecommand{\lmTopK}{32}
+\providecommand{\lmSeqLen}{128}\providecommand{\lmSteps}{4000}\providecommand{\lmBatch}{32}
+\providecommand{\lmSeeds}{2}\providecommand{\lmTrainSeqs}{2400}\providecommand{\lmValSeqs}{260}
+\providecommand{\lmOpaqueLoss}{4.0}\providecommand{\lmOpaqueLossStd}{0.01}
+\providecommand{\lmReconDelta}{0.10}\providecommand{\lmReconDeltaStd}{0.01}
+\providecommand{\lmReconSwap}{0.10}\providecommand{\lmReconSwapStd}{0.01}
+\providecommand{\lmReconLegLoss}{4.2}\providecommand{\lmReconAgree}{90.0}
+\providecommand{\lmReconRecon}{0.10}
+\providecommand{\lmCandorDelta}{0.05}\providecommand{\lmCandorDeltaStd}{0.01}
+\providecommand{\lmCandorSwap}{0.05}\providecommand{\lmCandorSwapStd}{0.01}
+\providecommand{\lmCandorLegLoss}{4.1}\providecommand{\lmCandorAgree}{95.0}
+\providecommand{\lmCandorRecon}{0.10}
+\providecommand{\lmSaeFinalDelta}{0.10}\providecommand{\lmSaeFinalDeltaStd}{0.01}
+\providecommand{\lmSaeFinalSwap}{0.10}\providecommand{\lmSaeFinalSwapStd}{0.01}
+\providecommand{\lmSaeFinalLegLoss}{4.1}\providecommand{\lmSaeFinalAgree}{90.0}
+\providecommand{\lmSaeFinalRecon}{0.10}
+\providecommand{\lmSaeAllDelta}{0.20}\providecommand{\lmSaeAllDeltaStd}{0.01}
+\providecommand{\lmSaeAllSwap}{0.20}\providecommand{\lmSaeAllSwapStd}{0.01}
+\providecommand{\lmSaeAllLegLoss}{4.3}\providecommand{\lmSaeAllAgree}{85.0}
+\providecommand{\lmSaeAllRecon}{0.10}
+\providecommand{\lmReconFinalDelta}{0.10}\providecommand{\lmCandorFinalDelta}{0.05}
+\providecommand{\lmReconLoss}{4.0}\providecommand{\lmCandorLoss}{4.0}
+\providecommand{\lmCandorTax}{0.02}\providecommand{\lmCandorTaxStd}{0.01}
+\providecommand{\lmReconTax}{0.01}\providecommand{\lmCandorTaxPct}{0.5}
+\providecommand{\lmDeltaRatio}{2.0}\providecommand{\lmSwapRatio}{2.0}
 \IfFileExists{_numbers.tex}{\input{_numbers.tex}}{}
 
 \title{\textbf{The Explanation Is the Forward Pass:\\
@@ -109,10 +147,16 @@ directional accuracy); a backdoor that bypasses the concept channel is exposed b
 certificate spike (detection AUC \trojanAuc{}). The primitive composes with
 attention. On the pretrained GPT-2 the certificate machinery transfers, but neither a
 \emph{frozen} retrofit nor single-layer fine-tuning favours CANDOR over a
-reconstruction-only SAE, and an $\approx\ftReconGain{}\times$ reconstruction
-improvement under fine-tuning fails to tighten the certificate: reconstruction and
-faithfulness dissociate, and full by-construction training remains the central open
-question. We are explicit
+reconstruction-only SAE (a negative that is stable across seeds and loss weightings),
+and an $\approx\ftReconGain{}\times$ reconstruction improvement under fine-tuning
+fails to tighten the certificate: reconstruction and faithfulness dissociate.
+Training a small language model from scratch \emph{with} its bottlenecks reverses
+the picture, as the thesis predicts: on real text the full objective certifies
+materially tighter than a matched reconstruction-only control
+($\delta=\lmCandorDelta{}$ vs.\ \lmReconDelta{}) at no measured capability tax,
+though the absolute certificate remains loose; whether by-construction training
+certifies \emph{tightly} at realistic scale is the central open question. We are
+explicit
 about scope: these are small-scale demonstrations, and completeness is unattainable
 under computation in superposition; the contribution is to make the bypass
 \emph{measured, bounded, and certified}. All code and every measured number are
@@ -204,10 +248,16 @@ be checked, CANDOR recovers the concepts, certifies tightly at near-zero tax, pa
 directional causal test, detects a channel-bypassing backdoor via a certificate spike, and
 composes with attention on a sequence task. On the pretrained GPT-2 we show the certificate
 machinery transfers to a real LLM \emph{and}, honestly, that neither a frozen retrofit nor
-single-layer fine-tuning favours CANDOR over an SAE, while an
+single-layer fine-tuning favours CANDOR over an SAE (stably across seeds and
+weightings), while an
 $\approx\ftReconGain{}\times$ reconstruction improvement fails to tighten the
 certificate, dissociating reconstruction from faithfulness and delimiting the
-contribution to the by-construction regime. Every number is measured and released.
+contribution to the by-construction regime. In that regime, at the smallest honest
+scale, the prediction holds: a language model trained from scratch with its
+bottlenecks certifies materially tighter than its matched reconstruction-only
+control ($\delta=\lmCandorDelta{}$ vs.\ \lmReconDelta{}) at no measured tax, the
+thesis's first real-text support, with an absolute certificate that remains loose.
+Every number is measured and released.
 \end{enumerate}
 We do not claim to have solved interpretable AI. We claim a concrete,
 checkable mechanism that converts interpretability from an after-the-fact description
@@ -631,15 +681,25 @@ this paper. \emph{Second, the prediction does not hold at this scale.} At matche
 language-modelling loss (\ftCandorLoss{} vs.\ \ftSaeLoss{}), FT-CANDOR certifies
 \emph{less} tightly than the control ($\delta=\ftCandorDelta{}$ vs.\ \ftSaeDelta{}) and
 its leak is less inert (\ftCandorSwap{} vs.\ \ftSaeSwap{}). Reshaping a single MLP under
-a joint objective, at this budget and weighting, is not the regime in which the
+a joint objective, at this budget, is not the regime in which the
 behavioural and causal signals win; we report this negative result at the same standard
-as the positives (single seed, single weighting, every number measured and released).
+as the positives (every number measured and released). A sweep over \ftSweepSeeds{}
+seeds and a tenfold range of objective weightings ($\beta=\mu\in\{\ftSweepWeightLow,
+\ftSweepWeightMid, \ftSweepWeightHigh\}$; Appendix~\ref{app:details}) confirms the
+negative is structural rather than an artefact of the seed or the weighting: FT-SAE
+certifies at $\delta=\ftSweepSaeDelta\pm\ftSweepSaeDeltaStd$ (mean $\pm$ standard
+deviation over seeds) while FT-CANDOR reaches
+$\ftSweepCandorDeltaLow\pm\ftSweepCandorDeltaLowStd$,
+$\ftSweepCandorDeltaMid\pm\ftSweepCandorDeltaMidStd$ and
+$\ftSweepCandorDeltaHigh\pm\ftSweepCandorDeltaHighStd$ at the three weightings.
+Raising the weights tightens FT-CANDOR's certificate somewhat but pays a
+language-modelling cost (\ftSweepCandorLossHigh{} vs.\ \ftSweepSaeLoss{} validation
+loss at the heaviest weighting), and no setting closes the gap to the control.
 The by-construction gains of Experiments \ref{sec:planted}--\ref{sec:seq} have therefore
-\emph{not yet} been reproduced on a pretrained model, by retrofitting or by local
-fine-tuning; the decisive experiment remains \emph{full} by-construction training,
-co-training the network with its bottlenecks from the start, which exceeds the compute
-available for this study and which we name as the central open question
-(\S\ref{sec:limits}).
+\emph{not} been reproduced on a pretrained model, by retrofitting or by local
+fine-tuning; the decisive experiment is \emph{full} by-construction training,
+co-training the network with its bottlenecks from the start, which we run next
+(\S\ref{sec:scratch}).
 
 \begin{figure}[t]
 \centering
@@ -674,6 +734,60 @@ the anchoring term governs cross-run concept-identity stability (dropping it sen
 zero). No single objective delivers all three; the conjunction does.}
 \label{fig:abl}
 \end{figure}
+
+\subsection{By-construction training on real text}
+\label{sec:scratch}
+The retrofit and fine-tuning results delimit where CANDOR's objectives do \emph{not}
+pay; neither tests the thesis, which is a claim about \emph{training}. Here we run
+the decisive experiment at the smallest honest scale: a language model trained from
+scratch \emph{with} its bottlenecks. Three conditions share one architecture (a
+\lmLayers-layer decoder-only Transformer, $d_{\mathrm{model}}=\lmDModel$, \lmHeads{}
+heads, MLP width \lmDMlp), one corpus (TinyShakespeare under GPT-2 tokenisation:
+\lmTrainSeqs{} training and \lmValSeqs{} validation sequences of length \lmSeqLen),
+one optimiser, batch schedule and step budget, and \lmSeeds{} seeds
+(Appendix~\ref{app:details}). \textbf{OPAQUE} has no bottlenecks: the capability
+reference and the substrate for the post-hoc pipeline (TopK SAEs at matched
+$m=\lmDictM$, $k=\lmTopK$, fitted to its MLP activations afterwards and spliced back
+in, at the final site as in \S\ref{sec:gpt2} and at every site for an
+ablation-matched comparison). \textbf{RECON-ONLY} places a Legible Bottleneck on
+every MLP hidden state and trains with the LM loss plus leak energy only: the
+control that separates ``a reconstructing channel is present'' from ``the CANDOR
+objectives act''. \textbf{CANDOR} is the full conjoined objective.
+
+\emph{The by-construction prediction holds here, on every faithfulness metric, in
+both seeds.} At matched architecture and training, CANDOR certifies materially
+tighter than the control ($\delta=\lmCandorDelta\pm\lmCandorDeltaStd$ vs.\
+$\lmReconDelta\pm\lmReconDeltaStd$, mean $\pm$ standard deviation over seeds), its
+leak is more causally inert (leak-swap \lmCandorSwap{} vs.\ \lmReconSwap), its
+legible replacement agrees with the deployed model on \lmCandorAgree\% of held-out
+next-token decisions against \lmReconAgree\%, and its legible model is the more
+capable one (validation loss \lmCandorLegLoss{} vs.\ \lmReconLegLoss). The control
+is not a strawman: it reconstructs \emph{better} than CANDOR (unexplained variance
+\lmReconRecon{} vs.\ \lmCandorRecon), yet its certificate ($\delta=\lmReconDelta$)
+is barely tighter than post-hoc SAEs spliced into the frozen opaque model at every
+site ($\delta=\lmSaeAllDelta$). The dissociation of \S\ref{sec:gpt2} therefore runs
+in both directions: reconstruction gains bought no tightening there, and here CANDOR
+trades reconstruction away for behavioural faithfulness. The ordering is unchanged
+under the single-site protocol of \S\ref{sec:gpt2}, ablating only the final site
+(CANDOR \lmCandorFinalDelta{}, control \lmReconFinalDelta{}, post-hoc SAE
+\lmSaeFinalDelta).
+
+\emph{There is no measured tax at this scale; the sign reverses.} CANDOR's full
+model generalises better than the opaque reference (validation loss \lmCandorLoss{}
+vs.\ \lmOpaqueLoss; RECON-ONLY sits between at \lmReconLoss). Every condition
+overfits this small corpus (training loss near zero), so we read the reversed sign
+as a regularisation effect of the bottleneck objectives in the overfitting regime,
+measured honestly, not as evidence that legibility is free at scale.
+
+\emph{The absolute certificate stays loose.} CANDOR's mean $\delta$ of
+\lmCandorDelta{} is more than two orders of magnitude above the synthetic-task
+regime (\S\ref{sec:planted}): on real text at this scale, roughly half of the
+output distribution's mass is still shaped by computation the named concepts do not
+carry, and the certificate says so on every forward pass. By-construction training
+buys a \emph{materially tighter} certificate than any retrofit, control, or post-hoc
+splice we measured; it does not yet buy a \emph{tight} one. This gives the thesis
+its first real-text support and sharpens the open question: whether the gap widens
+or closes at realistic scale and data.
 
 \section{Related work}
 \label{sec:related}
@@ -726,22 +840,26 @@ models, but moves the certificate from the model's \emph{outputs} to the model's
 \section{Limitations and honest scope}
 \label{sec:limits}
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt]
-\item \textbf{Scale, and the retrofit/by-construction gap.} Our positive evidence is on
-synthetic ground-truth tasks and a one-layer Transformer, \emph{not} a frontier LLM; we
-chose the regime where soundness can be \emph{checked}. On the real pretrained GPT-2
-(\S\ref{sec:gpt2}) the certificate \emph{machinery} transfers, but neither a
-\emph{frozen} retrofit nor single-layer joint fine-tuning favours CANDOR over a
-reconstruction-only SAE, and under fine-tuning an $\approx\ftReconGain{}\times$
-reconstruction improvement fails to tighten the certificate. The hypothesis that
-CANDOR's gains require the model to reshape its computation through the channel has so
-far been tested only down to one layer's MLP, one seed and one loss weighting, and it
-did not hold there; it remains open beyond that regime. The single most important next
-experiment is therefore \emph{full} by-construction training of an LLM with its
-bottlenecks (plus a seed and weight sweep of the fine-tuning probe), followed by a
-frontier-scale evaluation (SAEBench, RAVEL, MIB, and a real backdoor-detection
+\item \textbf{Scale, and the retrofit/by-construction gap.} Our tightly certified
+evidence is on synthetic ground-truth tasks and a one-layer Transformer, \emph{not} a
+frontier LLM; we chose the regime where soundness can be \emph{checked}. On the real
+pretrained GPT-2 (\S\ref{sec:gpt2}) the certificate \emph{machinery} transfers, but
+neither a \emph{frozen} retrofit nor single-layer joint fine-tuning favours CANDOR
+over a reconstruction-only SAE (stable across three seeds and a tenfold weighting
+range), and under fine-tuning an $\approx\ftReconGain{}\times$ reconstruction
+improvement fails to tighten the certificate. The hypothesis that CANDOR's gains
+require the model to reshape its computation through the channel failed in every
+retrofit regime and held in the smallest by-construction one (\S\ref{sec:scratch}):
+trained from scratch with its bottlenecks, a four-layer LM certifies materially
+tighter than its matched reconstruction-only control at no measured tax, but its
+absolute certificate on held-out text remains loose ($\delta=\lmCandorDelta$), the
+comparison spans two seeds and one small corpus, and the reversed tax is an
+overfitting-regime effect. The single most important next experiment is therefore
+by-construction training at realistic scale and data, followed by a frontier-scale
+evaluation (SAEBench, RAVEL, MIB, and a real backdoor-detection
 battery~\citep{karvonen2025saebench,huang2024ravel,mueller2025mib}); these are future
-work, not present claims. Whether the favourable tax/legibility frontier persists at
-scale is the central open empirical question.
+work, not present claims. Whether the certificate tightens rather than loosens as
+scale and capability grow is the central open empirical question.
 \item \textbf{No completeness.} By Rem.~\ref{rem:incomplete} we do not and cannot claim
 the certificate reaches zero on arbitrary computation; we claim it is sound, measured,
 and trainable, and that a large $\delta$ is an honest abstention signal.
@@ -788,14 +906,16 @@ invariant the model proves, one forward pass at a time.
 
 \section*{Reproducibility statement}
 Every number in this paper is machine-generated: \path{experiments/run_all.py}
-(and \path{experiments/exp_gpt2.py} for \S\ref{sec:gpt2}) writes raw results to
+(and the LLM scripts \path{experiments/exp_gpt2.py}, \path{exp_gpt2_ft.py},
+\path{exp_gpt2_ft_sweep.py}, \path{exp_lm_scratch.py} for
+\S\ref{sec:gpt2}--\ref{sec:scratch}) writes raw results to
 \path{results/*.json}, \path{scripts/paper_numbers.py} converts them into the
 macros used in the text (\path{paper/_numbers.tex}), and
 \path{scripts/make_figures.py} renders the figures. No number is hand-entered, and
 \texttt{make all} reproduces the paper end-to-end from a fresh checkout. All random
-seeds are fixed in the experiment scripts (Appendix~\ref{app:details}); the experiments
-run on commodity hardware (CPU is sufficient), and the GPT-2 experiment uses only the
-publicly available GPT-2 small weights and a public text corpus. Code, the reference
+seeds are fixed in the experiment scripts (Appendix~\ref{app:details}); the
+synthetic-task experiments run on CPU, the LLM experiments on a single commodity
+GPU, and all of them use only publicly available weights and text. Code, the reference
 implementation (\texttt{candorkit}), unit tests, and all measured results are available
 under an MIT license at \url{https://github.com/AnwarDebes/candor}.
 
@@ -924,12 +1044,68 @@ causal-sufficiency term (total variation against the leak-swapped splice), each 
 weight $1.0$; FT-SAE adds nothing. Matched step counts mean FT-CANDOR spends roughly
 three forward passes per step to FT-SAE's one, as in the frozen comparison. Evaluation
 is identical to the frozen experiment, and the original model's validation loss
-(\ftOrigLoss{}) is reported as the capability reference. This is a single-seed,
-single-weighting probe, stated as such in \S\ref{sec:gpt2}.
+(\ftOrigLoss{}) is reported as the capability reference. The headline run uses seed
+$0$ and weight $1.0$ on both behavioural terms.
+
+\textbf{Robustness sweep.} \path{experiments/exp_gpt2_ft_sweep.py} repeats the
+identical protocol over seeds $\{0, 1, 2\}$ and weightings
+$\beta=\mu\in\{\ftSweepWeightLow, \ftSweepWeightMid, \ftSweepWeightHigh\}$ (applied
+jointly to the faithfulness and causal terms); FT-SAE does not depend on the
+weighting and is trained once per seed. Sweep numbers in \S\ref{sec:gpt2} are means
+and standard deviations over the three seeds; raw per-run values are in
+\path{results/gpt2_ft_sweep.json}.
+
+\subsection{By-construction LM training (\S\ref{sec:scratch})}
+\textbf{Data.} The public TinyShakespeare text, tokenised with the GPT-2 tokeniser
+into non-overlapping sequences of length \lmSeqLen{}, shuffled with a fixed corpus
+seed ($0$) and split $90/10$ by sequence (\lmTrainSeqs{} train / \lmValSeqs{}
+validation sequences); the identical data and split are used by every condition and
+seed.
+
+\textbf{Architecture.} All conditions share a \lmLayers{}-layer pre-norm decoder-only
+Transformer: $d_{\mathrm{model}}=\lmDModel$, \lmHeads{} attention heads, MLP width
+\lmDMlp{}, learned positional embeddings, untied unembedding, next-token logits at
+every position. OPAQUE has no bottlenecks. RECON-ONLY and CANDOR place a Legible
+Bottleneck ($m=\lmDictM$, $k=\lmTopK$) on every MLP hidden state (\lmLayers{} sites);
+in mode \texttt{full} the bottlenecks do not alter the computation, so all three
+conditions compute the same function class.
+
+\textbf{Training.} \lmSteps{} steps, Adam, learning rate $3\times10^{-4}$, batch size
+\lmBatch{}, plain fp32 (no mixed precision), no learning-rate schedule, weight decay,
+or dropout; seeds $\{0, 1\}$, with the batch schedule drawn from the same
+seed-matched generator in every condition, so the three conditions see the same data
+in the same order. Bottleneck conditions renormalise decoder columns and update the
+anchoring EMA (momentum $0.99$) each step.
+
+\textbf{Objectives.} OPAQUE: next-token cross-entropy only. RECON-ONLY:
+cross-entropy plus the leak-energy term with weight $\lambda=0.3$; no behavioural,
+causal, anchoring, or sparsity terms, so it isolates ``a reconstructing channel is
+present'' from ``the CANDOR objectives act''. CANDOR: the full conjoined objective at
+the library defaults, identical across seeds: $\alpha=0.5$ (legible task),
+$\beta=1.0$ (faithfulness KL between the full and legible next-token distributions,
+averaged over every position), $\lambda=0.3$ (leak energy), $\mu=0.3$ (causal
+sufficiency, total variation against the leak-swapped forward, averaged over every
+position), $\gamma=10^{-2}$ (anchoring), $L_1$ penalty $10^{-3}$.
+
+\textbf{Post-hoc pipeline.} After OPAQUE training, a TopK SAE with matched
+$m=\lmDictM$, $k=\lmTopK$ is fitted to each block's MLP hidden states over the
+training split (\lmSteps{} steps, Adam, learning rate $10^{-3}$, batch $1{,}024$
+rows, MSE reconstruction, decoder columns renormalised each step), then spliced into
+the frozen opaque model by loading its weights into a bottleneck twin (verified
+exactly identical in mode \texttt{full}) and routing through the fitted dictionaries.
+It is evaluated both at the final site only, matching the single-site retrofit
+protocol of \S\ref{sec:gpt2}, and at every site, the ablation-matched comparison to
+the by-construction conditions.
+
+\textbf{Metrics.} As everywhere else: $\delta$ and the leak-swap effect are total
+variation between next-token distributions, here averaged over all positions of the
+held-out split; agreement is top-1; unexplained variance is residual energy over
+hidden-state energy, per site. The tax is the difference in full-model validation
+loss against OPAQUE.
 
 \subsection{Compute}
-All experiments run on a single commodity machine; no data-centre resources are used.
-Each \texttt{results/*.json} file records the device and wall-clock time of the run
-that produced it.
+All experiments run on a single commodity machine (the LLM experiments use one GPU);
+no data-centre resources are used. Each \texttt{results/*.json} file records the
+device and wall-clock time of the run that produced it.
 
 \end{document}

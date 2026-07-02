@@ -1,5 +1,58 @@
 # Changelog
 
+## v1.3.0 (2026-07-02)
+
+### Added
+- `experiments/exp_gpt2_ft_sweep.py`: robustness sweep of the layer-wise fine-tuning
+  probe over seeds {0, 1, 2} and joint behavioural/causal weightings {0.3, 1.0, 3.0},
+  with FT-SAE trained once per seed; raw per-run values plus per-weighting means and
+  standard deviations in `results/gpt2_ft_sweep.json`.
+- `candorkit`: `LegibleLMTransformer` (a decoder-only language model with a Legible
+  Bottleneck on every MLP hidden state, next-token logits at every position, and
+  optional site-restricted routing), `OpaqueLMTransformer` (the matched opaque twin,
+  exposing MLP hidden states for post-hoc SAE fitting, with `load_opaque` weight
+  transfer for splicing), and `candor_lm_loss` / `lm_cross_entropy` (the conjoined
+  objective adapted to language modelling: faithfulness KL and causal TV averaged
+  over every position).
+- `experiments/exp_lm_scratch.py`: the by-construction experiment the paper named as
+  its central open question, at the smallest honest scale. Three matched conditions
+  (OPAQUE, RECON-ONLY, CANDOR) trained from scratch on TinyShakespeare over seeds
+  {0, 1}, plus a post-hoc TopK SAE pipeline spliced into the opaque model at the
+  final site and at every site; full config and per-seed metrics in
+  `results/lm_scratch.json`.
+- Two unit tests for the LM transformer (opaque-twin equivalence in full mode with
+  recon + leak reconstructing the true hidden state at every site; finite LM loss and
+  site-restricted routing); the suite is now 10 tests.
+- The new experiments are wired into `experiments/run_all.py` and the `Makefile` as
+  explicit targets excluded from the default run; the paper gains section 7.5 and an
+  appendix protocol subsection.
+
+### Findings (reported as measured)
+- The fine-tuning negative is stable: across 3 seeds and a tenfold weighting range,
+  FT-SAE certifies at delta 0.128 +- 0.001 while FT-CANDOR spans 0.143 to 0.165;
+  heavier weightings tighten FT-CANDOR somewhat at a language-modelling cost (4.31 vs
+  4.19 validation loss at the heaviest) and never close the gap to the control.
+- By-construction training flips the picture, as the paper's thesis predicts: trained
+  from scratch with its bottlenecks, CANDOR certifies materially tighter than the
+  matched reconstruction-only control (delta 0.467 vs 0.645; leak-swap 0.579 vs
+  0.748; top-1 agreement 48% vs 32%; consistent in both seeds) and tighter than
+  post-hoc SAEs spliced at every site of the opaque twin (0.657), at no measured
+  capability tax (held-out loss 8.53 vs the opaque 9.60; every condition overfits the
+  small corpus, so the reversed sign is read as a regularisation effect).
+- The reconstruction/faithfulness dissociation runs in both directions: RECON-ONLY
+  reconstructs better than CANDOR (unexplained variance 0.082 vs 0.189) yet certifies
+  far looser, mirroring the fine-tuning probe where an 8x reconstruction gain bought
+  no tightening. The absolute certificate stays loose (delta about 0.47): small-scale
+  real-text support for the by-construction prediction, not yet a tight certificate.
+
+### Changed
+- Paper: section 7.4 extended with the sweep result, new section 7.5 on
+  by-construction training, appendix protocols for both, and the abstract,
+  contribution 4, limitations, and reproducibility statement updated to match the
+  evidence. `paper/_numbers.tex` regenerated (existing macro values unchanged, new
+  macros appended, line endings normalised to LF).
+- Version 1.3.0 in `pyproject.toml` and `candorkit.__version__`.
+
 ## v1.2.0 (2026-07-02)
 
 ### Added

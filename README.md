@@ -69,18 +69,29 @@ and recovery collapses; drop the causal term and the leak regains causal power; 
 anchoring and concept identity stops being stable across runs. *The conjunction is the
 contribution.* The Legible Bottleneck also composes with attention on a sequence task.
 
-**Honest real-LLM probe (GPT-2 small).** Retrofitting the channel onto a *frozen* GPT-2
-shows the certificate machinery transfers to a real model (δ is measurable by splicing and
-running GPT-2), **but a frozen retrofit does *not* favour CANDOR over a reconstruction-only
-SAE** (δ 0.11 vs 0.13). A matched **layer-wise fine-tuning probe** (`exp_gpt2_ft.py`,
-unfreezing the spliced MLP under a capability-anchoring LM loss) extends the finding two
-ways: an ~8x reconstruction improvement leaves the certificate no tighter
-(**reconstruction and faithfulness dissociate**), and adding the behavioural + causal
-objectives still does not beat the reconstruction-only control (δ 0.156 vs 0.128, single
-seed and weighting). Both results are reported at the same standard as the positives,
-because that is the point: the by-construction gains of Exp 1 and 2 have *not yet* been
-reproduced on a pretrained model by retrofitting or local fine-tuning. **Full
-by-construction LLM training is the named open question.**
+**Honest real-LLM probes (GPT-2 small, and a from-scratch LM).** Retrofitting the channel
+onto a *frozen* GPT-2 shows the certificate machinery transfers to a real model (δ is
+measurable by splicing and running GPT-2), **but a frozen retrofit does *not* favour CANDOR
+over a reconstruction-only SAE** (δ 0.11 vs 0.13). A matched **layer-wise fine-tuning
+probe** (`exp_gpt2_ft.py`, unfreezing the spliced MLP under a capability-anchoring LM loss)
+extends the finding two ways: an ~8x reconstruction improvement leaves the certificate no
+tighter (**reconstruction and faithfulness dissociate**), and adding the behavioural +
+causal objectives still does not beat the reconstruction-only control (δ 0.156 vs 0.128).
+A sweep (`exp_gpt2_ft_sweep.py`) shows this negative is stable across 3 seeds and a
+tenfold weighting range (δ 0.143 to 0.165 vs 0.128 ± 0.001). Retrofitting, in every form
+we tried, does not vindicate the objectives.
+
+**By-construction training flips it** (`exp_lm_scratch.py`): a 4-layer LM trained from
+scratch on TinyShakespeare *with* its bottlenecks certifies **materially tighter than a
+matched reconstruction-only control** (δ 0.467 vs 0.645; leak-swap 0.579 vs 0.748; top-1
+agreement 48% vs 32%; consistent in both seeds) and tighter than post-hoc SAEs spliced
+into the opaque twin at every site (δ 0.657), at **no measured tax** (held-out loss 8.53
+vs the opaque 9.60, in a heavily overfit small-corpus regime where the objectives act as
+regularisers). The control reconstructs *better* (unexplained variance 0.08 vs 0.19) yet
+certifies far looser, so the dissociation runs in both directions. The absolute
+certificate stays loose (δ ≈ 0.47): **the by-construction prediction now has small-scale
+real-text support**; whether it certifies *tightly* at realistic scale is the open
+question.
 
 ## Quick start
 
@@ -113,11 +124,11 @@ print(cert.active_concepts[0])                                  # the named expl
 | Path | What it is |
 |---|---|
 | `candorkit/bottleneck.py` | the **Legible Bottleneck** primitive (encode, sparse named code, decode, measured leak) |
-| `candorkit/model.py` | CANDOR MLP and Transformer with the three routing modes (full / legible / leak-swap) |
+| `candorkit/model.py` | CANDOR MLP, Transformer, and decoder-only LM (plus opaque twins) with the three routing modes (full / legible / leak-swap) |
 | `candorkit/losses.py` | the conjoined objective: completeness + faithfulness + leak + **causal sufficiency** + anchoring |
 | `candorkit/certificate.py` | the **Faithfulness Certificate** `δ(x)` and the named explanation |
 | `candorkit/metrics.py` | ground-truth checks: concept recovery, causal necessity, stability |
-| `experiments/` | planted concepts, the tax/legibility frontier, a sequence (attention) task |
+| `experiments/` | planted concepts, the tax/legibility frontier, a sequence (attention) task, the GPT-2 retrofit and fine-tuning probes, and by-construction LM training |
 | `scripts/` | results to paper numbers, results to figures |
 | `paper/candor.tex` | the paper, *The Explanation Is the Forward Pass: Interpretability by Construction with Certified Legible Bottlenecks* |
 

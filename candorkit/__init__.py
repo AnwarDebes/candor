@@ -21,7 +21,7 @@ from .model import (LegibleLMTransformer, LegibleMLP, LegibleTransformer,
 from .train import (TrainConfig, device_auto, fit_sae, sae_codes, train_candor,
                     train_opaque)
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "LegibleBottleneck", "BottleneckOutput", "topk_mask",
