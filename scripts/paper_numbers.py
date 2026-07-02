@@ -119,6 +119,20 @@ def main():
         ratio = s["delta"] / max(1e-6, c["delta"])
         cmd("gptDeltaRatio", f"{ratio:.1f}")
 
+    ft = load("gpt2_ft.json")
+    if ft:
+        s, c = ft["ft_sae"], ft["ft_candor"]
+        cmd("ftSteps", ft["steps"])
+        cmd("ftOrigLoss", f3(ft["orig_loss_full"]))
+        cmd("ftSaeDelta", f4(s["delta"])); cmd("ftCandorDelta", f4(c["delta"]))
+        cmd("ftSaeSwap", f4(s["leak_swap"])); cmd("ftCandorSwap", f4(c["leak_swap"]))
+        cmd("ftSaeRecon", f3(s["recon_unexplained"])); cmd("ftCandorRecon", f3(c["recon_unexplained"]))
+        cmd("ftSaeLoss", f3(s["loss_full"])); cmd("ftCandorLoss", f3(c["loss_full"]))
+        fz = ft.get("frozen_reference")
+        if fz:
+            gain = fz["sae"]["recon_unexplained"] / max(1e-6, s["recon_unexplained"])
+            cmd("ftReconGain", f"{gain:.0f}")
+
     with open(OUT, "w") as f:
         f.write("\n".join(lines) + "\n")
     n = sum(1 for l in lines if l.startswith("\\renewcommand"))

@@ -80,7 +80,7 @@ class Splicer:
             return m_hat
         if self.mode == "leakswap":
             leak = out - m_hat
-            return m_hat + leak[torch.randperm(out.shape[0])]
+            return m_hat + leak[torch.randperm(out.shape[0], device=out.device)]
         return out
 
 

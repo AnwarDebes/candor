@@ -1,0 +1,59 @@
+{
+  "model": "gpt2",
+  "layer": 9,
+  "unfrozen": "mlp-of-spliced-layer",
+  "seq_len": 24,
+  "n_train": 1190,
+  "n_val": 210,
+  "m": 2048,
+  "k": 32,
+  "steps": 500,
+  "batch": 12,
+  "lr_tc": 0.002,
+  "lr_mlp": 0.0001,
+  "recon_w": 1.0,
+  "faith_w": 1.0,
+  "causal_w": 1.0,
+  "seed": 0,
+  "device": "cuda",
+  "orig_loss_full": 5.443051077959207,
+  "ft_sae": {
+    "delta": 0.12820319831371307,
+    "leak_swap": 0.14851905405521393,
+    "recon_unexplained": 0.04626067467466274,
+    "loss_full": 4.193613688151042,
+    "loss_legible": 4.285751917742301,
+    "loss_ablated": 5.451132347470238,
+    "train_sec": 442.3
+  },
+  "ft_candor": {
+    "delta": 0.1560012251138687,
+    "leak_swap": 0.1722651720046997,
+    "recon_unexplained": 0.0820992908237076,
+    "loss_full": 4.225346156529018,
+    "loss_legible": 4.414961321655021,
+    "loss_ablated": 5.451132347470238,
+    "train_sec": 1606.5
+  },
+  "frozen_reference": {
+    "sae": {
+      "delta": 0.11356503516435623,
+      "leak_swap": 0.13187846541404724,
+      "recon_unexplained": 0.37477775178576106,
+      "loss_full": 5.443046339204839,
+      "loss_legible": 5.417922878857725,
+      "loss_ablated": 5.451128783926954,
+      "loss_recovered": 4.108398660416641
+    },
+    "candor": {
+      "delta": 0.12992146611213684,
+      "leak_swap": 0.15970270335674286,
+      "recon_unexplained": 0.4859247068316867,
+      "loss_full": 5.443046339204839,
+      "loss_legible": 5.4175399495948175,
+      "loss_ablated": 5.451128783926954,
+      "loss_recovered": 4.155776561048594
+    }
+  },
+  "elapsed_sec": 2239.3
+}
