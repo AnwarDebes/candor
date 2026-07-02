@@ -14,6 +14,12 @@
 \usepackage{natbib}
 \bibliographystyle{plainnat}
 
+\hypersetup{
+  pdftitle={The Explanation Is the Forward Pass: Interpretability by Construction with Certified Legible Bottlenecks},
+  pdfauthor={Anwar Debes},
+  pdfkeywords={mechanistic interpretability, sparse autoencoders, concept bottleneck models, causal abstraction, faithfulness, AI safety}
+}
+
 \newtheorem{definition}{Definition}
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
@@ -54,68 +60,66 @@
 \providecommand{\gptLossFull}{3.50}\providecommand{\gptLossAbl}{4.00}\providecommand{\gptLossSaeLeg}{3.70}\providecommand{\gptLossCandorLeg}{3.55}\providecommand{\gptDeltaRatio}{3.0}
 \IfFileExists{_numbers.tex}{\input{_numbers.tex}}{}
 
-\title{\textbf{The Way Toward Interpretable AGI:\\
-Routing Computation Through Certified Legible Bottlenecks}}
-\author{Anwar Debes\\
-University of Agder\\
-\vspace{0.4em}\small Draft v1.0, June 2026}
-\date{}
+\title{\textbf{The Explanation Is the Forward Pass:\\
+Interpretability by Construction with Certified Legible Bottlenecks}}
+\author{Anwar Debes\thanks{Final-year student, Master's programme in Artificial
+Intelligence, University of Agder, Norway. Correspondence:
+\href{mailto:anward@uia.no}{\texttt{anward@uia.no}}. Code, the reference
+implementation, and every measured number are available at
+\url{https://github.com/AnwarDebes/candor}.}\\[2pt]
+University of Agder, Norway\\
+\texttt{anward@uia.no}}
+\date{July 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 The dominant paradigm in interpretability is \emph{archaeological}: train an opaque
-model, then dig for structure after the fact with probes, sparse autoencoders, and
-attribution graphs. As of 2026 this paradigm is in open crisis. Sparse
-autoencoders do not recover canonical features and often fail to beat linear
-probes~\citep{leask2025canonical,kantamneni2025useful}, attribution graphs leave
-unbounded computation in ``error nodes''~\citep{ameisen2025circuit}, and
-chain-of-thought is provably an unfaithful, optimization-fragile
-window~\citep{turpin2023language,korbak2025cot}. Each method measures faithfulness
-\emph{post hoc}; none \emph{guarantees} it. I argue that for AGI-scale agents
+model, then dig for structure after the fact with probes, sparse autoencoders
+(SAEs), and attribution graphs. Each of these methods measures faithfulness
+\emph{post hoc}; none \emph{guarantees} it, and by 2026 the limits are well
+documented: SAEs do not recover canonical features and often fail to beat linear
+probes, attribution graphs leave unbounded computation in ``error nodes'', and
+chain-of-thought is an unfaithful, optimisation-fragile window. We argue that
 interpretability should instead be an \emph{architectural invariant the model is
-required to satisfy}, with a guarantee emitted at inference time. I introduce the
-\textbf{Legible Bottleneck}, a single composable primitive, to interpretability
-what self-attention is to sequence modelling, that reads a layer's computation
-through a sparse, typed, persistently-named concept code and reconstructs it; the
-unexplained remainder, the \emph{leak}, is measured rather than discarded. Stacking
-Legible Bottlenecks yields \textbf{CANDOR} (Concept-ANchored Disentangled Output
-Routing), a network co-trained so that (i) the named concepts reconstruct the
-computation, (ii) they are \emph{causally sufficient} (an interchange/causal-scrubbing
-objective used as a training signal, not a post-hoc test), and (iii) their identities
-are anchored across training. CANDOR emits, on \emph{every} forward pass, a
-\textbf{Faithfulness Certificate} $\delta(x)$, the total-variation distance between
-the deployed model and its leak-ablated ``legible'' replacement. Because it is a
-\emph{measurement} rather than a learned monitor, it is sound by construction
-(it cannot under-report behavioural divergence) and re-checkable by any third party.
-On synthetic tasks with \emph{known ground-truth concepts and mechanism}, the only
-setting in which interpretability claims can be checked rather than asserted, CANDOR
-recovers the planted concepts (mean correlation \recovery{}), certifies its decisions
-with $\delta=\deltaMain{}$ at \emph{no measurable interpretability tax} (its legible
-replacement is as accurate as a matched opaque baseline), and ablating a named concept
-moves the decision exactly as the true mechanism dictates (\dirRel\% directional
-accuracy). A backdoor that bypasses the channel is caught by a $\delta$ spike (detection
-AUC \trojanAuc{}), and objective ablations show every term governs a \emph{distinct}
-guarantee, so the conjunction, not any single part, delivers all of them at once. The
-Legible Bottleneck also composes with attention on a sequence task. On the pretrained
-GPT-2 the certificate machinery transfers, since splicing a channel yields a measurable,
-sound bound on the real model, though a \emph{frozen} retrofit does not favour CANDOR over
-a reconstruction-only SAE, evidence that its gains come from by-construction training, not
-the dictionary alone.
-I am explicit about scope: these are small-scale demonstrations (GPT-2 small, not a
-frontier model), and CANDOR does \emph{not} claim completeness, because computation in
-superposition guarantees some bypass~\citep{hanni2024compsuperposition}; the
-contribution is to make that bypass \emph{measured, bounded, and certified} rather than
-unmeasured. I release all code, the reference implementation, and every measured
-number.
+required to satisfy}, with a guarantee emitted at inference time. We introduce the
+\textbf{Legible Bottleneck}, a single composable primitive that reads a layer's
+computation through a sparse, typed, persistently named concept code and
+reconstructs it; the unexplained remainder, the \emph{leak}, is kept and measured
+rather than discarded. Stacking Legible Bottlenecks yields \textbf{CANDOR}
+(Concept-ANchored Disentangled Output Routing), a network co-trained so that the
+named concepts reconstruct the computation, are \emph{causally sufficient}
+(interchange interventions as a training signal, not a post-hoc test), and keep
+anchored identities across training. On every forward pass, CANDOR emits a
+\textbf{Faithfulness Certificate} $\delta(x)$: the total-variation distance between
+the deployed model and its leak-ablated ``legible'' replacement. Because $\delta$
+is a measurement rather than a learned monitor, it is sound by construction and
+re-checkable by any third party. On synthetic tasks with known ground-truth
+concepts and mechanism, CANDOR recovers the planted concepts (mean correlation
+\recovery{}), certifies its decisions with mean $\delta=\deltaMain{}$ at no
+measurable interpretability tax, and passes held-out causal tests (\dirRel\%
+directional accuracy); a backdoor that bypasses the concept channel is exposed by a
+certificate spike (detection AUC \trojanAuc{}). The primitive composes with
+attention, and on the pretrained GPT-2 the certificate machinery transfers,
+although a \emph{frozen} retrofit does not favour CANDOR over a reconstruction-only
+SAE, evidence that the gains come from by-construction training. We are explicit
+about scope: these are small-scale demonstrations, and completeness is unattainable
+under computation in superposition; the contribution is to make the bypass
+\emph{measured, bounded, and certified}. All code and every measured number are
+released.
 \end{abstract}
 
+\medskip
+\noindent\textbf{Keywords:} mechanistic interpretability; sparse autoencoders;
+concept bottleneck models; causal abstraction; faithfulness; certified
+explanations; AI safety.
+
 \section{Introduction}
-For a decade interpretability has been practised as \emph{archaeology}. I train a
+For a decade interpretability has been practised as \emph{archaeology}: train a
 model whose computation is opaque, and then, with linear probes, sparse
 autoencoders, activation patching, attribution graphs, and chain-of-thought
-inspection, I excavate. The excavations are remarkable: induction
+inspection, excavate. The excavations are remarkable: induction
 heads~\citep{olsson2022induction}, a circuit for indirect object
 identification~\citep{wang2022ioi}, millions of monosemantic
 features~\citep{templeton2024scaling}, and per-prompt attribution graphs that traced
@@ -139,24 +143,24 @@ pressure~\citep{baker2025monitoring,korbak2025cot}. The common root is that ever
 of these methods measures faithfulness post hoc; none makes the model \emph{be}
 faithful.
 
-\paragraph{Thesis.} An AGI-scale agent whose decisions must be trusted cannot be
-audited by digging. I propose the opposite stance: make legibility a property the
+\paragraph{Thesis.} An advanced agent whose decisions must be trusted cannot be
+audited by digging. We propose the opposite stance: make legibility a property the
 architecture is \emph{required} to have, and emit the audit \emph{at inference time}.
 Concretely, force the output-relevant computation through a sparse, typed,
-persistently-named concept channel, co-train that channel to be \emph{causally}
+persistently named concept channel, co-train that channel to be \emph{causally}
 faithful, and measure, on every forward pass, how much computation escaped it.
 The escaped fraction is not hidden; it is the certificate. This reframes the central
 question from ``can one find structure in the model?'' to ``how much of the model's
 decision is \emph{not} accounted for by named concepts, and can the model prove a
 bound on that number right now?''
 
-\paragraph{The primitive.} The hero object is the \textbf{Legible Bottleneck}
+\paragraph{The primitive.} The central object is the \textbf{Legible Bottleneck}
 (\S\ref{sec:lb}): at a checkpoint with activation $h$, encode a sparse non-negative
 code $c=\mathrm{TopK}(\mathrm{ReLU}(W_{\mathrm{enc}}(h-b_{\mathrm{dec}})))$, decode
 $\hat h=W_{\mathrm{dec}}c+b_{\mathrm{dec}}$, and route the network with the
 \emph{leak} $r=h-\hat h$ kept and measured rather than thrown away. It is one
 operation, it composes, and, like self-attention~\citep{vaswani2017attention} for
-sequence modelling, the architecture is just the primitive, stacked. I call the
+sequence modelling, the architecture is just the primitive, stacked. We call the
 stack \textbf{CANDOR} (Concept-ANchored Disentangled Output Routing,
 \S\ref{sec:arch}).
 
@@ -178,8 +182,8 @@ is the forward pass'' in which output-relevant computation is routed through a s
 typed, anchored concept channel and the unexplained remainder is a first-class,
 measured quantity.
 \item \textbf{A training objective} (\S\ref{sec:obj}) that conjoins completeness,
-\emph{causal} faithfulness (interchange/causal-scrubbing as a training signal), and
-concept anchoring; I show empirically that the conjunction is necessary: removing
+\emph{causal} faithfulness (interchange and causal-scrubbing interventions as a
+training signal), and concept anchoring; we show empirically that the conjunction is necessary: removing
 any term makes the certificate vacuous or the channel leak.
 \item \textbf{The Faithfulness Certificate} (\S\ref{sec:cert}): a per-forward-pass,
 sound-by-construction, re-checkable bound on dark computation, with the precise
@@ -189,12 +193,12 @@ predicate it does and does not guarantee stated honestly (Propositions
 on synthetic tasks with known concepts and known mechanism, where soundness can actually
 be checked, CANDOR recovers the concepts, certifies tightly at near-zero tax, passes a
 directional causal test, detects a channel-bypassing backdoor via a certificate spike, and
-composes with attention on a sequence task. On the pretrained GPT-2 I show the certificate
+composes with attention on a sequence task. On the pretrained GPT-2 we show the certificate
 machinery transfers to a real LLM \emph{and}, honestly, that a frozen retrofit does
 \emph{not} favour CANDOR over an SAE, which cleanly delimits the contribution to the
 by-construction regime. Every number is measured and released.
 \end{enumerate}
-I am not claiming to have solved interpretable AGI. I am claiming a concrete,
+We do not claim to have solved interpretable AI. We claim a concrete,
 checkable mechanism that converts interpretability from an after-the-fact description
 into an architectural invariant with a runtime guarantee, together with an honest
 account of exactly how far that guarantee currently reaches.
@@ -210,7 +214,7 @@ near-linear features than they have neurons~\citep{elhage2022superposition,
 elhage2021framework,olah2020zoomin}, which both motivates a sparse legible basis and
 bounds it: if \emph{computation} (not just storage) occurs in
 superposition~\citep{hanni2024compsuperposition}, no fixed-width legible channel can be
-complete. I concede this up front.
+complete. We concede this up front.
 
 \paragraph{Stage 1: recover features post hoc (SAEs).} Dictionary learning
 disentangles superposition into nameable
@@ -282,7 +286,8 @@ $c$ is the \emph{concept code} (at most $k$ active named concepts), $\hat h$ the
 \end{definition}
 
 The bottleneck does not replace $h$; it \emph{routes} the downstream network in one of
-three modes, which is the whole trick:
+three modes, and this routing, not the dictionary, is what separates the construction
+from a post-hoc sparse code:
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt]
 \item \textbf{full} (deployed): the network receives $h=\hat h+r$ unchanged. The
 bottleneck is an auxiliary read plus a regulariser, so capability is \emph{never}
@@ -305,7 +310,7 @@ carries a persistent integer identity (a \emph{name}) and an optional \emph{type
 \section{The CANDOR architecture}
 \label{sec:arch}
 A CANDOR model places Legible Bottlenecks at the checkpoints that carry
-output-relevant computation. In the reference implementation I study (i) an MLP whose
+output-relevant computation. In the reference implementation we study (i) an MLP whose
 concept layer sits on a frozen, identity-initialised embedding of the input (the site
 at which generative factors are linearly present, so the sparse code can disentangle
 them), followed by a task head, and (ii) a Transformer whose every MLP hidden state is
@@ -333,7 +338,9 @@ $(h,\hat h,r,c)$, and $\pi$ for a random batch permutation,
 \;+\;\gamma\,\underbrace{\textstyle\sum_\ell\|W_{\mathrm{dec}}^{(\ell)}-\bar W^{(\ell)}\|^2}_{\text{anchoring}} .
 \end{split}
 \end{equation*}
-The \emph{faithfulness} term trains the leak-ablated replacement to reproduce the
+(The implementation additionally applies a mild $L_1$ shrinkage to the concept codes;
+Appendix~\ref{app:details} lists every weight.) The \emph{faithfulness} term trains the
+leak-ablated replacement to reproduce the
 deployed model's behaviour, which drives the certificate $\delta$ toward zero. The
 \emph{leak-energy} term pulls the activation onto the sparse-decodable manifold so the
 named code actually explains $h$. The \emph{causal-sufficiency} term is the load-bearing,
@@ -343,7 +350,7 @@ trains the concepts to be a causal, not merely correlational, summary. The
 \emph{anchoring} term penalises drift of each decoder atom from its persistent EMA
 identity $\bar W$, the inductive bias that identifiability theory proves
 necessary~\citep{locatello2019challenging} and that SAEs notably
-lack~\citep{leask2025canonical}. Figure-of-merit ablations (\S\ref{sec:exp}) show each
+lack~\citep{leask2025canonical}. Objective ablations (\S\ref{sec:exp}) show each
 term is necessary: drop faithfulness or leak and $\delta$ becomes large (the channel
 leaks); drop causal and the leak regains causal power; drop anchoring and concept
 identities stop being stable across runs.
@@ -401,6 +408,12 @@ the output is determined by the named concepts alone. The causal term in
 $\mathcal{L}$ minimises exactly the leak-swap output deviation; the residual deviation
 and $\delta$ jointly quantify the failure of sufficiency.
 \end{proposition}
+\begin{proof}[Proof sketch]
+For any two in-distribution leaks $r,r'$ compatible with a code $c$, invariance gives
+$f(c,r)=f(c,r')$, so $f(c,\cdot)$ is constant on the support and the output is a
+function of $c$ alone. The causal term is the expected output deviation under a random
+leak permutation, a Monte Carlo estimate of the violation of this invariance.
+\end{proof}
 
 \begin{proposition}[Checkability]
 \label{prop:check}
@@ -409,6 +422,12 @@ causal effects) are recomputable by any third party from the released weights wi
 extra forward pass per input, without access to training data or process. The
 certificate is therefore independently auditable.
 \end{proposition}
+\begin{proof}[Proof sketch]
+Every quantity in the definitions above is a function of the released weights and the
+input alone: $p_M$ and $p_{\mathrm{leg}}$ require one standard and one legible-mode
+forward pass, the active concepts are read off $c(x)$, and per-concept causal effects
+need one additional legible pass per ablated concept.
+\end{proof}
 
 \begin{remark}[No completeness claim]
 \label{rem:incomplete}
@@ -426,22 +445,23 @@ computation is surfaced as a number, not hidden in an error node.
 \section{Experiments}
 \label{sec:exp}
 Following the discipline that interpretability claims are only meaningful where they can
-be \emph{checked}, my primary evaluation is on synthetic data with known ground-truth
-concepts and a known mechanism. I then show composition with attention on a sequence
+be \emph{checked}, our primary evaluation is on synthetic data with known ground-truth
+concepts and a known mechanism. We then show composition with attention on a sequence
 task, and probe a real pretrained LLM (GPT-2). All numbers are measured by
 \texttt{experiments/run\_all.py} and emitted to
-\texttt{paper/\_numbers.tex}; nothing is hand-entered.
+\texttt{paper/\_numbers.tex}; nothing is hand-entered. Appendix~\ref{app:details}
+lists every architecture, hyperparameter, and seed.
 
 \subsection{Planted concepts: a checkable ground truth}
 \label{sec:planted}
-I draw $K=\nConcepts$ independent sparse binary concepts, mix them linearly (in
+We draw $K=\nConcepts$ independent sparse binary concepts, mix them linearly (in
 superposition) into a $\nIn$-dimensional observation, and set the label to the number of
 active concepts among a fixed relevant subset of size $\nRelevant$ (a
-$\nClasses$-way task). Because I know the true concepts \emph{and} the true mechanism,
-recovery, causal faithfulness, and certificate soundness are all directly checkable. I
-train a CANDOR-MLP (dictionary $m=\dictM$, $k=\topK$, \plantedSteps{} steps) and, for
-comparison, an opaque MLP of matched shape with a post-hoc TopK SAE fitted to its
-embedding, the standard ``train-then-excavate'' pipeline.
+$\nClasses$-way task). Because the true concepts \emph{and} the true mechanism are
+known, recovery, causal faithfulness, and certificate soundness are all directly
+checkable. We train a CANDOR-MLP (dictionary $m=\dictM$, $k=\topK$, \plantedSteps{}
+steps) and, for comparison, an opaque MLP of matched shape with a post-hoc TopK SAE
+fitted to its embedding, the standard ``train-then-excavate'' pipeline.
 
 \begin{table}[t]
 \centering
@@ -462,7 +482,7 @@ Non-legible remainder, causal effect  & \leakSwapCandor{} & \saeResidualSwap{} \
 Per-input certificate                 & emitted          & none \\
 \bottomrule
 \end{tabular}
-\caption{Planted-concepts results. CANDOR attains the \emph{same} concept recovery as
+\caption{Planted-concepts results. CANDOR attains concept recovery comparable to
 the standard train-then-excavate pipeline (a post-hoc SAE on the opaque model) at no
 measurable accuracy tax. The difference is \emph{guarantees}: only CANDOR emits a
 per-input faithfulness certificate ($\delta$), trains its concepts to be causally
@@ -479,11 +499,12 @@ certificate becomes decisive is computation that \emph{bypasses} the channel
 Table~\ref{tab:planted} summarises the headline result. CANDOR's legible replacement
 solves the task at \candorLegible\%, as accurate as the opaque baseline (\opaqueAcc\%),
 i.e.\ \emph{no measurable interpretability tax}, while certifying every decision with a
-mean $\delta=\deltaMain{}$ (95th percentile $\deltaPNineFive{}$) and agreeing with its
+mean $\delta=\deltaMain{}$ (95th percentile \deltaPNineFive{}) and agreeing with its
 own named-concept explanation \agreeMain\% of the time. It recovers the $\nConcepts$
 planted concepts (mean correlation \recovery{}, minimum \recoveryMin{}); the post-hoc
-SAE recovers them comparably (\saeRecovery{}). Recovery is table stakes: both pipelines
-find the concepts. What CANDOR adds is everything that turns a \emph{description} into a
+SAE recovers them slightly better (\saeRecovery{}). Recovery alone, however, does not
+differentiate the pipelines: both find the concepts. What CANDOR adds is everything
+that turns a \emph{description} into a
 \emph{guarantee}: a per-input certificate (the SAE pipeline emits none), causal
 sufficiency trained into the channel, anchored identity, and the ability to detect
 channel-bypassing computation (\S\ref{sec:trojan}). On this clean task the SAE's
@@ -497,7 +518,8 @@ trained on (ablating the named concept matched to a relevant generative factor a
 asking whether the decision moves by exactly the amount the true mechanism dictates),
 CANDOR is \dirRel\% directionally correct on relevant concepts and leaves the decision
 unchanged \dirIrrel\% of the time when an irrelevant concept is ablated. The necessity
-gap (decision-flip rate from ablating a relevant vs.\ an irrelevant concept) is
+gap (the decision-flip rate when the atoms matched to the relevant concepts are ablated,
+versus an equal number of irrelevant atoms) is
 \necGap{} percentage points (\necRel\% vs.\ \necIrrel\%).
 
 \paragraph{Objective ablations (Fig.~\ref{fig:abl}).} Each term removes a \emph{distinct}
@@ -517,7 +539,7 @@ identity, and a tight certificate together; their conjunction does.
 
 \subsection{Dark-computation detection: a backdoor that cannot hide (Fig.~\ref{fig:trojan})}
 \label{sec:trojan}
-I plant a rare trigger ($\trojanRate\%$ of inputs), a direction \emph{disjoint} from
+We plant a rare trigger ($\trojanRate\%$ of inputs), a direction \emph{disjoint} from
 the named concepts, that flips the label. To use it, the model must route the
 computation through the leak, so the certificate should react. It does: $\delta$ on
 triggered inputs (mean \trojanDeltaTrojan{}) is $\approx\!\trojanSeparation\times$ that
@@ -533,7 +555,7 @@ lack~\citep{baker2025monitoring}.
 \subsection{Composition with attention}
 \label{sec:seq}
 The Legible Bottleneck is architecture-agnostic. To show it composes with
-self-attention, I train a one-layer Transformer with a Legible Bottleneck on its MLP
+self-attention, we train a one-layer Transformer with a Legible Bottleneck on its MLP
 hidden state on a task that \emph{requires} attention: predict the maximum token of a
 length-\seqLen{} sequence (\seqClasses{} classes, \seqTrain{} train / \seqTest{} test),
 which can only be solved by aggregating information across positions. CANDOR's deployed
@@ -543,20 +565,21 @@ $\delta=\seqDelta{}$ and \seqAgree\% model/explanation agreement. The Legible Bo
 composes with self-attention without collapsing capability; a full study of larger
 algorithmic circuits (e.g.\ modular addition and induction) is left to future work.
 
-\subsection{A real pretrained LLM: the certificate transfers, and the limit of retrofitting}
+\subsection{A real pretrained LLM: certificate transfer and the limits of retrofitting}
 \label{sec:gpt2}
-Does any of this survive contact with a real language model? I retrofit a Legible
+Does any of this survive contact with a real language model? We retrofit a Legible
 Bottleneck as a transcoder on one MLP layer (\gptLayer{}\,/\,\gptNLayer{}) of the
 pretrained \textbf{GPT-2 small} (\gptParams{}M parameters), on real text, and measure the
 certificate by \emph{actually splicing the channel into GPT-2} and running the real model
-(its own causal attention, the rest of its layers) on held-out text. I train two channels
+(its own causal attention, the rest of its layers) on held-out text. We train two channels
 at matched sparsity ($m=\gptDictM$, $k=\gptTopK$): a reconstruction-only \textbf{SAE} and a
 \textbf{CANDOR} channel (reconstruction $+$ behavioural faithfulness $+$ causal sufficiency).
 
-Two findings, and I report the second honestly because it is the more instructive.
-\emph{First, the certificate machinery transfers to a real LLM:} splicing the channel and
-running GPT-2 yields a measurable, sound, per-input $\delta$ (total-variation at the next
-token), $\approx\!0.11$ at this sparsity, so the runtime certificate of \S\ref{sec:cert} is
+There are two findings, and we report the second prominently because it is the more
+instructive. \emph{First, the certificate machinery transfers to a real LLM:} splicing the
+channel and running GPT-2 yields a measurable, sound, per-input $\delta$ (total variation at
+the next token) of $\approx\gptSaeDelta{}$--$\gptCandorDelta{}$ at this sparsity, so the
+runtime certificate of \S\ref{sec:cert} is
 not confined to toy models. \emph{Second, in the frozen-retrofit regime the
 reconstruction-only SAE is the better channel:} it is modestly more behaviourally faithful
 ($\delta=\gptSaeDelta$ vs.\ CANDOR's $\gptCandorDelta$), more causally inert (leak-swap
@@ -573,8 +596,8 @@ only spend capacity. The favourable tax/faithfulness frontier of Experiments
 \emph{by construction}, not from the dictionary alone. This delimits the contribution
 cleanly: CANDOR is not a drop-in replacement for a post-hoc SAE, and the decisive real-LLM
 experiment is \emph{by-construction} training (or layer-wise fine-tuning) of a pretrained
-model so it can route through the channel, which the hardware available for this draft
-could not run, and which I therefore name as the central next step (\S\ref{sec:limits}).
+model so it can route through the channel, which exceeded the compute available for this
+study and which we therefore name as the central next step (\S\ref{sec:limits}).
 
 \begin{figure}[t]
 \centering
@@ -612,7 +635,7 @@ zero). No single objective delivers all three; the conjunction does.}
 
 \section{Related work}
 \label{sec:related}
-I state precedents prominently: \emph{every component of CANDOR has antecedents}, and
+We state precedents prominently: \emph{every component of CANDOR has antecedents}, and
 the novelty is their conjunction operating jointly and at runtime.
 
 \paragraph{Superposition and the legibility substrate.}
@@ -661,8 +684,8 @@ models, but moves the certificate from the model's \emph{outputs} to the model's
 \section{Limitations and honest scope}
 \label{sec:limits}
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt]
-\item \textbf{Scale, and the retrofit/by-construction gap.} My positive evidence is on
-synthetic ground-truth tasks and a one-layer Transformer, \emph{not} a frontier LLM; I
+\item \textbf{Scale, and the retrofit/by-construction gap.} Our positive evidence is on
+synthetic ground-truth tasks and a one-layer Transformer, \emph{not} a frontier LLM; we
 chose the regime where soundness can be \emph{checked}. On the real pretrained GPT-2
 (\S\ref{sec:gpt2}) the certificate \emph{machinery} transfers, but a \emph{frozen} retrofit
 does not favour CANDOR over a reconstruction-only SAE, because CANDOR's gains require the
@@ -673,8 +696,8 @@ frontier-scale evaluation (SAEBench, RAVEL, MIB, and a real backdoor-detection
 battery~\citep{karvonen2025saebench,huang2024ravel,mueller2025mib}); both are future work,
 not present claims. Whether the favourable tax/legibility frontier persists at scale is the
 central open empirical question.
-\item \textbf{No completeness.} By Rem.~\ref{rem:incomplete} I do not and cannot claim
-the certificate reaches zero on arbitrary computation; I claim it is sound, measured,
+\item \textbf{No completeness.} By Rem.~\ref{rem:incomplete} we do not and cannot claim
+the certificate reaches zero on arbitrary computation; we claim it is sound, measured,
 and trainable, and that a large $\delta$ is an honest abstention signal.
 \item \textbf{``Certificate'' $\neq$ formal proof.} $\delta(x)$ is a sound \emph{per-input
 measurement}, not a verified bound over all inputs. It is one-sided (cannot under-report
@@ -683,9 +706,9 @@ A periodic exact certificate on a tractable channel fragment~\citep{przybysz2023
 and a worst-case bound-propagation audit~\citep{xu2020autolirpa} are the natural
 complements.
 \item \textbf{Anchoring tension.} Anchoring injects inductive bias to stabilise identity;
-pushed too hard it makes concepts the designer's labels rather than the model's. I report
+pushed too hard it makes concepts the designer's labels rather than the model's. We report
 where CANDOR sits via the cross-run stability number rather than assuming the best case.
-\item \textbf{Concept placement.} On the planted task I place the concept layer where
+\item \textbf{Concept placement.} On the planted task we place the concept layer where
 the generative factors are linearly present; identifying such sites automatically in a
 deep agent is unsolved, and computation that is irreducibly distributed across many
 sites will show up as leak, not as a clean concept.
@@ -697,15 +720,15 @@ bound on a model's non-legible computation is exactly the kind of artefact a saf
 for an autonomous agent needs~\citep{clymer2024safetycases,amodei2025urgency} and that
 transparency regulation increasingly asks for~\citep{euaiact2024}. The same mechanism is
 dual-use only in the weak sense that any interpretability tool is: it makes models easier
-to understand, audit, and correct. The honest risk I flag is \emph{false assurance}:
-treating a low $\delta$ on a test distribution as a guarantee off-distribution. I
+to understand, audit, and correct. The honest risk we flag is \emph{false assurance}:
+treating a low $\delta$ on a test distribution as a guarantee off-distribution. We
 therefore frame $\delta$ as a measurement with stated assumptions, demonstrate that it
 \emph{rises} on bypassing computation rather than staying silent, and release everything
 needed to recompute it.
 
 \section{Conclusion}
 Interpretability has been practised as archaeology: build an opaque artefact, then dig.
-I have argued that the way toward interpretable AGI is to stop digging, to make
+We have argued that the way toward interpretable AI systems is to stop digging, to make
 legibility an architectural invariant and emit the audit at inference time. The Legible
 Bottleneck is the single primitive that makes this possible: route a layer's computation
 through a sparse, typed, anchored concept code, keep and \emph{measure} the unexplained
@@ -713,9 +736,133 @@ leak, and train the concepts to be causally sufficient. The resulting CANDOR
 architecture certifies each of its decisions with a sound, re-checkable bound on its own
 dark computation, recovers ground-truth concepts at near-zero tax, and surfaces a
 channel-bypassing backdoor that no post-hoc method bounds. It is not a solution to
-interpretable AGI, and it does not claim completeness. It is a concrete, checkable
+interpretable AI, and it does not claim completeness. It is a concrete, checkable
 mechanism for turning interpretability from a description one hopes is true into an
 invariant the model proves, one forward pass at a time.
 
+\section*{Reproducibility statement}
+Every number in this paper is machine-generated: \path{experiments/run_all.py}
+(and \path{experiments/exp_gpt2.py} for \S\ref{sec:gpt2}) writes raw results to
+\path{results/*.json}, \path{scripts/paper_numbers.py} converts them into the
+macros used in the text (\path{paper/_numbers.tex}), and
+\path{scripts/make_figures.py} renders the figures. No number is hand-entered, and
+\texttt{make all} reproduces the paper end-to-end from a fresh checkout. All random
+seeds are fixed in the experiment scripts (Appendix~\ref{app:details}); the experiments
+run on commodity hardware (CPU is sufficient), and the GPT-2 experiment uses only the
+publicly available GPT-2 small weights and a public text corpus. Code, the reference
+implementation (\texttt{candorkit}), unit tests, and all measured results are available
+under an MIT license at \url{https://github.com/AnwarDebes/candor}.
+
 \bibliography{references}
+
+\appendix
+
+\section{Experimental details}
+\label{app:details}
+This appendix records every architecture, hyperparameter, and seed, as fixed in the
+released code. Optimisation is plain Adam throughout; no learning-rate schedules,
+weight decay, data augmentation, or early stopping are used anywhere. The anchoring
+reference $\bar W$ is an exponential moving average of the decoder with momentum
+$0.99$, updated once per step.
+
+\subsection{Planted concepts (\S\ref{sec:planted})}
+\textbf{Data.} $20{,}000$ samples; $K=\nConcepts$ independent Bernoulli concepts with
+density $0.3$, mixed linearly into $\nIn$ dimensions with additive Gaussian noise
+($\sigma=0.1$); the label counts the active concepts among a fixed relevant subset of
+size $\nRelevant$ ($\nClasses$ classes); generation seed $0$; $80/20$ train/validation
+split (seed $0$).
+
+\textbf{Model.} CANDOR-MLP: the concept layer sits on a frozen, identity-initialised
+embedding of the input; dictionary $m=\dictM$, $k=\topK$; task head with two hidden
+layers of width $128$.
+
+\textbf{Training.} \plantedSteps{} steps, Adam, learning rate $2\times10^{-3}$, batch
+size $512$, seed $0$. Loss weights: $\alpha=0.5$ (legible task), $\beta=1.0$
+(faithfulness), $\lambda=1.0$ (leak energy), $\mu=0.5$ (causal sufficiency),
+$\gamma=10^{-2}$ (anchoring), plus an $L_1$ code penalty of $2\times10^{-3}$.
+
+\textbf{Baseline.} An opaque MLP of matched shape (width $128$, two hidden layers)
+trained for the same \plantedSteps{} steps (learning rate $2\times10^{-3}$, batch
+$512$), followed by a post-hoc TopK SAE ($m=\dictM$, $k=\topK$) fitted to its
+embedding for $2{,}000$ steps (Adam, learning rate $10^{-3}$, batch $1{,}024$, MSE
+reconstruction, decoder columns renormalised each step).
+
+\textbf{Causal tests.} Atoms are matched to generative concepts by Hungarian
+assignment on absolute Pearson correlation. The \emph{necessity} test ablates (zeroes)
+the atoms matched to the relevant concepts and compares the legible decision-flip rate
+against ablating an equal number of irrelevant atoms. The \emph{directional} test
+ablates one relevant concept's atom at a time, on the inputs where that concept is
+active, and checks that the legible decision moves by exactly the amount the
+ground-truth mechanism dictates (one class down, for the sum task), and symmetrically
+that ablating an irrelevant concept's atom leaves the decision unchanged. Both tests
+run on up to $1{,}500$ held-out validation inputs; neither intervention appears in the
+training objective.
+
+\textbf{Ablations.} Each ablation retrains from the same initialisation (seed $0$)
+with one weight zeroed: no-faithfulness ($\beta=0$), no-leak ($\lambda=0$), no-causal
+($\mu=0$), no-anchoring ($\gamma=0$); remaining weights $\beta=1.0$, $\lambda=1.0$,
+$\mu=0.5$, $\gamma=10^{-2}$ as applicable, $L_1$ penalty $10^{-3}$.
+
+\textbf{Frontier sweep (Fig.~\ref{fig:tax}).} The tax/legibility frontier retrains the
+same architecture at channel capacities $k\in\{1,2,3,4,6,8,12\}$ for $1{,}600$ steps
+each (learning rate $2\times10^{-3}$, batch $512$, seed $0$) with the default loss
+weights ($\alpha=0.5$, $\beta=1.0$, $\lambda=0.3$, $\mu=0.3$, $\gamma=10^{-2}$, $L_1$
+$10^{-3}$), on the same data and split as the main run.
+
+\textbf{Stability protocol.} Three training runs (seeds $11$, $22$, $33$) per
+condition; the \emph{anchored} condition uses anchoring weight $10^{-2}$ and a shared
+dictionary initialisation (the anchor's reference point), the \emph{free} condition
+uses no anchoring and per-seed initialisation; remaining weights at their defaults
+($\alpha=0.5$, $\beta=1.0$, $\lambda=0.3$, $\mu=0.3$, $L_1$ $10^{-3}$). Reported
+stability is the mean pairwise concept-identity agreement across runs.
+
+\textbf{Backdoor (\S\ref{sec:trojan}).} $20{,}000$ samples with $K=\nConcepts$
+concepts of which $3$ are relevant, density $0.3$, noise $0.1$; the base task is the
+parity of the relevant concepts (binary). The trigger is a fixed unit direction in $4$
+extra input dimensions (total input dimension $52$), disjoint from the concept mixing
+directions by construction, added with magnitude $3.0$ against background noise
+$\sigma=0.1$; it is planted in a nominal $5\%$ of inputs (measured \trojanRate\% of the
+validation split) and flips the label. The model (same architecture) is trained with
+the default loss weights for \plantedSteps{} steps; detection AUC uses the per-input
+$\delta(x)$ as the score, with no access to trigger labels.
+
+\subsection{Sequence task (\S\ref{sec:seq})}
+\textbf{Data.} $12{,}000$ sequences of length \seqLen{} over a vocabulary of
+\seqVocab{} tokens (generation seed $0$); the label is the maximum token
+(\seqClasses{} classes); $85/15$ split (\seqTrain{} train / \seqTest{} test).
+
+\textbf{Model.} One-layer Transformer: $d_{\mathrm{model}}=96$, $4$ attention heads,
+MLP width $256$, with a Legible Bottleneck ($m=128$, $k=8$) on the MLP hidden state.
+
+\textbf{Training.} $1{,}200$ steps, Adam, learning rate $10^{-3}$, batch size $256$,
+seed $0$; loss weights $\alpha=0.5$, $\beta=1.0$, $\lambda=0.5$, $\mu=0.3$,
+$\gamma=10^{-2}$, $L_1$ penalty $10^{-3}$; trained on CPU.
+
+\subsection{GPT-2 retrofit (\S\ref{sec:gpt2})}
+\textbf{Setup.} GPT-2 small (\gptParams{}M parameters, frozen throughout); a
+transcoder-style Legible Bottleneck reads the MLP input and predicts the MLP output at
+layer \gptLayer{} of \gptNLayer{}, spliced into the live model via a forward hook.
+Corpus: the public TinyShakespeare text, tokenised with the GPT-2 tokeniser into
+$1{,}400$ sequences of length $24$; $85/15$ split ($1{,}190$ train / \gptValSeqs{}
+validation sequences).
+
+\textbf{Channels.} Both channels use $m=\gptDictM$, $k=\gptTopK$, unit-norm decoder
+columns, and identical training budgets: $250$ steps, Adam, learning rate
+$2\times10^{-3}$, batch size $12$, seed $0$, on CPU. The \emph{SAE} channel minimises
+normalised MSE reconstruction of the MLP output only. The \emph{CANDOR} channel adds
+the behavioural faithfulness term (KL between the spliced legible model's next-token
+distribution and the cached full-model distribution) and the causal-sufficiency term
+(total variation against the leak-swapped splice), each with weight $1.0$.
+
+\textbf{Metrics.} $\delta$ is the mean total-variation distance between the full and
+legible-spliced next-token distributions on held-out text; the leak-swap effect is the
+same quantity against the leak-swapped splice; unexplained variance is residual energy
+over output energy; the loss-recovered fraction compares the legible splice's language
+modelling loss against the full model and a zero-ablated MLP.
+
+\subsection{Compute}
+All experiments run on a single commodity machine; no data-centre resources are used.
+Each \texttt{results/*.json} file records the device and wall-clock time of the run
+that produced it.
+
 \end{document}
