@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "CANDOR"
+type: software
+authors:
+  - family-names: "Debes"
+    given-names: "Anwar"
+repository-code: "https://github.com/AnwarDebes/candor"
+license: MIT
+preferred-citation:
+  type: report
+  title: "The Explanation Is the Forward Pass: Interpretability by Construction with Certified Legible Bottlenecks"
+  authors:
+    - family-names: "Debes"
+      given-names: "Anwar"
+  year: 2026
+  url: "https://github.com/AnwarDebes/candor/blob/main/paper/candor.pdf"
