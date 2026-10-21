@@ -9,6 +9,7 @@
 [![Paper](https://img.shields.io/badge/paper-PDF-b31b1b)](paper/candor.pdf)
 [![Tests](https://img.shields.io/badge/tests-passing-success)](tests/)
 [![Certificate](https://img.shields.io/badge/runtime-certificate-0e7c6b)](#the-faithfulness-certificate)
+[![Glass box](https://img.shields.io/badge/glass%20box-open%20in%20your%20browser-10b981)](https://anwardebes.github.io/candor/)
 
 **Interpretability by construction: route a layer's computation through a certified Legible
 Bottleneck, and emit a runtime bound on everything the named concepts cannot explain.**
@@ -48,6 +49,14 @@ model is required to satisfy**, and emits the audit **at inference time**:
 The paper is at [`paper/candor.pdf`](paper/candor.pdf). **Every reported number is measured
 by `experiments/run_all.py` and emitted into the paper automatically. Nothing is
 hand-entered.**
+
+## The glass box
+
+**[Open the glass box](https://anwardebes.github.io/candor/)**: two trained CANDOR networks, running in your browser layer by layer.
+
+https://github.com/user-attachments/assets/902f0c7f-0525-42d3-9f78-9b5bb6f7d4bb
+
+Toggle the hidden patterns in an input and watch the concept layer name them, the leak get measured, and the certificate stay near zero. Switch a concept off and the legible twin changes its answer: the explanation is what the model runs on. Then plant a trigger in a backdoored model: it gets atoms that no pattern explains, and switching those off sends the certificate up. The page measures δ on 1,200 fresh inputs to show how well it separates clean from triggered. Weights come from `candorkit` (`live/export_model.py`), and a test checks the JavaScript forward pass against PyTorch.
 
 ## What the experiments show (all measured, on ground-truth tasks)
 
@@ -131,6 +140,7 @@ print(cert.active_concepts[0])                                  # the named expl
 | `experiments/` | planted concepts, the tax/legibility frontier, a sequence (attention) task, the GPT-2 retrofit and fine-tuning probes, and by-construction LM training |
 | `scripts/` | results to paper numbers, results to figures |
 | `paper/candor.tex` | the paper, *The Explanation Is the Forward Pass: Interpretability by Construction with Certified Legible Bottlenecks* |
+| `live/` | the glass box: both demo models exported from `candorkit`, a JavaScript forward pass tested against PyTorch, and the page |
 
 ## The Faithfulness Certificate
 

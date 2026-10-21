@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.4.0 (2026-10-21)
+
+### Added
+- `live/`: the glass box, published at https://anwardebes.github.io/candor/. Two
+  `LegibleMLP` models (planted `sum` task and `trojan_concepts`) trained by
+  `live/export_model.py` and run in the browser: concept toggles, atom interventions
+  on the legible twin, the leak, the certificate on every input, and a δ histogram
+  with AUC over 1,200 freshly sampled clean and triggered inputs.
+- `live/tests/forward.test.mjs` checks the JavaScript forward pass against the
+  PyTorch reference outputs stored in `live/models.json`; CI runs it before each
+  deployment.
+
+### Findings (reported as measured)
+- In the exported backdoor model the trigger is mostly captured by two atoms that
+  no planted concept explains, so the legible twin follows the trigger and δ stays
+  small (mean 0.0105 triggered against 0.0002 clean), yet δ still separates
+  triggered inputs with AUC 0.943. Switching those atoms off routes the trigger
+  through the leak and the certificate rises sharply.
+
 ## v1.3.0 (2026-07-02)
 
 ### Added
