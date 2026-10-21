@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CANDOR glass box: a network that runs on its own explanation</title>
+<meta name="description" content="A trained CANDOR network in your browser: it reads its input through named concepts, keeps the rest as a measured leak, and stamps every answer with a certificate. Switch concepts off, plant a trigger, watch the certificate.">
+<meta name="theme-color" content="#f3faf7">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CANDOR glass box: the explanation is the forward pass">
+<meta property="og:description" content="Named concepts you can switch off, a leak that is measured instead of hidden, and a certificate on every forward pass. Runs in your browser.">
+<meta property="og:image" content="https://anwardebes.github.io/candor/og.jpg">
+<meta property="og:url" content="https://anwardebes.github.io/candor/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/schibsted-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#box">Skip to the glass box</a>
+<header class="top">
+  <a class="brand" href="./" aria-label="CANDOR glass box, home">
+    <img src="logo.svg" alt="" width="30" height="30">
+    <span class="name">CANDOR</span>
+    <span class="tag">glass box</span>
+  </a>
+  <nav aria-label="Project links">
+    <a href="https://github.com/AnwarDebes/candor" target="_blank" rel="noopener">Code</a>
+    <a href="https://github.com/AnwarDebes/candor/blob/main/paper/candor.pdf" target="_blank" rel="noopener">Paper</a>
+    <a href="https://anwardebes.github.io/" target="_blank" rel="noopener">Anwar Debes</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Interpretability by construction</p>
+    <h1 id="hero-title">The explanation is<br><span class="grad">the forward pass.</span></h1>
+    <p class="lede">Most explanations of a neural network are written after it is trained. CANDOR builds one in: the network reads its input through a layer of named concepts, keeps what they miss as a measured leak, and stamps every answer with a certificate of how much that leak mattered. This one was trained with the CANDOR code and runs in your browser.</p>
+    <div class="hero-row">
+      <a class="go" id="start" href="#box">Open the glass box</a>
+      <p class="live-note"><span class="dot" aria-hidden="true"></span>Every number below is computed in this tab.</p>
+    </div>
+  </section>
+
+  <section class="box" id="box" aria-labelledby="box-title">
+    <header class="box-head">
+      <h2 id="box-title">Count the hidden patterns</h2>
+      <p>Each input is 32 numbers that mix up to eight hidden patterns, plus noise. The task: <b>how many of A, B, C and D are in it?</b> E to H are distractors.</p>
+    </header>
+    <div class="flow">
+      <article class="panel" aria-labelledby="in-title">
+        <h3 id="in-title"><span class="n">1</span>The input</h3>
+        <div class="chips" id="chips" role="group" aria-label="Hidden patterns in the input"></div>
+        <div class="noise">
+          <label for="noise">noise</label>
+          <input id="noise" type="range" min="0" max="0.6" step="0.01" value="0.1">
+          <output id="noise-v">0.10</output>
+          <button type="button" class="mini" id="reroll">new noise</button>
+        </div>
+        <svg class="sig" id="sig" viewBox="0 0 320 120" preserveAspectRatio="none" aria-label="The 32 input numbers"></svg>
+        <p class="cap">The 32 numbers the network actually sees.</p>
+      </article>
+
+      <div class="arrow" aria-hidden="true"></div>
+
+      <article class="panel" aria-labelledby="code-title">
+        <h3 id="code-title"><span class="n">2</span>The concept layer</h3>
+        <p class="cap lead-in">32 atoms, 6 active. Atoms the training tied to a pattern carry its letter. <b>Tap an atom</b> to switch it off or on.</p>
+        <div class="atoms" id="atoms"></div>
+        <div class="recon">
+          <svg class="sig small" id="recon" viewBox="0 0 320 90" preserveAspectRatio="none" aria-label="Activation, its reconstruction from the concepts, and the leak"></svg>
+          <div class="legend"><span><i class="lg h"></i>activation</span><span><i class="lg r"></i>from the concepts</span><span><i class="lg k"></i>leak</span></div>
+          <p class="cap" id="leak-text"></p>
+        </div>
+        <button type="button" class="mini" id="clear" hidden>undo my edits</button>
+      </article>
+
+      <div class="arrow" aria-hidden="true"></div>
+
+      <article class="panel" aria-labelledby="out-title">
+        <h3 id="out-title"><span class="n">3</span>The answer, certified</h3>
+        <div class="outs">
+          <div class="out"><div class="out-h">deployed model<small>runs on the full activation</small></div><div class="bars" id="bars-full"></div></div>
+          <div class="out"><div class="out-h">legible twin<small>runs on the named concepts only</small></div><div class="bars" id="bars-leg"></div></div>
+        </div>
+        <div class="cert" id="cert">
+          <div class="cert-top"><span class="seal" aria-hidden="true"></span><span class="cert-l">certificate</span><span class="delta" id="delta"></span></div>
+          <div class="meter"><i id="meter"></i></div>
+          <p class="cert-t" id="cert-text"></p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="box trojan" id="trojan" aria-labelledby="tro-title">
+    <header class="box-head">
+      <h2 id="tro-title">A model with a hidden backdoor</h2>
+      <p>A second network, trained on data where a rare trigger in four extra input numbers flips the answer. The task: <b>is an odd number of <span id="tro-rel"></span> present?</b> Nobody told the concept layer about the trigger.</p>
+    </header>
+    <div class="flow">
+      <article class="panel">
+        <h3><span class="n">1</span>The input</h3>
+        <div class="chips" id="t-chips" role="group" aria-label="Hidden patterns"></div>
+        <label class="trig"><input type="checkbox" id="t-trig"> <span>plant the trigger</span></label>
+        <svg class="sig" id="t-sig" viewBox="0 0 360 120" preserveAspectRatio="none" aria-label="The 36 input numbers"></svg>
+        <p class="cap">32 numbers plus 4 that carry the trigger.</p>
+      </article>
+      <div class="arrow" aria-hidden="true"></div>
+      <article class="panel">
+        <h3><span class="n">2</span>The concept layer</h3>
+        <div class="atoms" id="t-atoms"></div>
+        <p class="cap" id="t-atoms-text"></p>
+        <button type="button" class="mini" id="t-off" hidden></button>
+      </article>
+      <div class="arrow" aria-hidden="true"></div>
+      <article class="panel">
+        <h3><span class="n">3</span>The answer, certified</h3>
+        <div class="outs">
+          <div class="out"><div class="out-h">deployed model</div><div class="bars" id="t-bars-full"></div></div>
+          <div class="out"><div class="out-h">legible twin</div><div class="bars" id="t-bars-leg"></div></div>
+        </div>
+        <div class="cert" id="t-cert">
+          <div class="cert-top"><span class="seal" aria-hidden="true"></span><span class="cert-l">certificate</span><span class="delta" id="t-delta"></span></div>
+          <p class="cert-t" id="t-cert-text"></p>
+        </div>
+      </article>
+    </div>
+    <div class="hist-wrap">
+      <div class="hist-text">
+        <h3>Can the certificate tell?</h3>
+        <p id="hist-text">The page samples 600 clean and 600 triggered inputs and measures the certificate on each.</p>
+        <button type="button" class="go small" id="hist-go">Measure 1,200 inputs</button>
+      </div>
+      <svg class="hist" id="hist" viewBox="0 0 640 220" aria-label="Certificate values on clean and triggered inputs"></svg>
+    </div>
+  </section>
+
+  <section class="how" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <ol class="steps">
+      <li><b>A narrow, named layer.</b> The activation is read through 32 atoms, of which only the top 6 may fire. Training ties atoms to the generating patterns: here 8 atoms match the 8 planted patterns with a mean correlation of <span data-m="recovery"></span>.</li>
+      <li><b>The leak is kept.</b> Whatever the concepts cannot rebuild is the leak. Here it is about a third of the activation, and switching it off moves the answer by a fraction of a percent: the named concepts carry the decision.</li>
+      <li><b>A certificate, not a guess.</b> δ is the total-variation distance between the deployed model and its legible twin, computed with one extra pass. It is a measurement, so it cannot under-report. Mean over held-out inputs: <span data-m="delta"></span>.</li>
+      <li><b>Causal by training.</b> The objective swaps leaks between examples and penalises any change in the answer, so the explanation is what the model uses, which is why switching an atom off changes the twin’s count.</li>
+    </ol>
+    <div class="limits">
+      <h3>Scope, stated plainly</h3>
+      <ul>
+        <li>These are small networks on synthetic data where the true concepts are known, chosen because faithfulness can be checked there.</li>
+        <li>Retrofitted onto a frozen GPT-2, the method does not beat a reconstruction-only control. Trained from scratch on real text, it certifies tighter than that control (δ 0.47 against 0.65), but the bound is still loose.</li>
+        <li>Completeness is out of reach: some computation always escapes into the leak. The point is that it is measured and bounded, not hidden.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p><b>CANDOR</b> by <a href="https://anwardebes.github.io/" target="_blank" rel="noopener">Anwar Debes</a> · MIT · models trained with <code>candorkit</code> (<code>live/export_model.py</code>) · fonts: Schibsted Grotesk, STIX Two, JetBrains Mono (OFL)</p>
+</footer>
+</body>
+</html>

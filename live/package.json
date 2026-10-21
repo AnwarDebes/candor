@@ -1,0 +1,10 @@
+{
+  "name": "candor-glass-box",
+  "private": true,
+  "type": "module",
+  "description": "A trained CANDOR network running in the browser: named concepts, a measured leak and a certificate on every forward pass.",
+  "scripts": {
+    "test": "node --test tests/forward.test.mjs"
+  },
+  "license": "MIT"
+}
