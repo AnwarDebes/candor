@@ -69,7 +69,7 @@ and recovery collapses; drop the causal term and the leak regains causal power; 
 anchoring and concept identity stops being stable across runs. *The conjunction is the
 contribution.* The Legible Bottleneck also composes with attention on a sequence task.
 
-**Honest real-LLM probes (GPT-2 small, and a from-scratch LM).** Retrofitting the channel
+**Real-LLM probes (GPT-2 small, and a from-scratch LM).** Retrofitting the channel
 onto a *frozen* GPT-2 shows the certificate machinery transfers to a real model (δ is
 measurable by splicing and running GPT-2), **but a frozen retrofit does *not* favour CANDOR
 over a reconstruction-only SAE** (δ 0.11 vs 0.13). A matched **layer-wise fine-tuning
@@ -146,17 +146,17 @@ Because `δ(x)` is **computed** by one extra forward pass rather than predicted 
 head, it is sound and one-sided: it can never under-report the divergence between the model
 and its named-concept explanation, and it cannot be Goodharted into silence. A backdoor
 that bypasses the channel has to route through the leak, so it surfaces as a `δ` spike
-rather than hiding. A large honest `δ` tells an auditor exactly when *not* to trust the
+rather than hiding. A large `δ` tells an auditor exactly when *not* to trust the
 explanation.
 
-## Honest scope
+## Scope
 
 These are **small-scale demonstrations on synthetic ground truth and a one-layer
 Transformer**, *not* a frontier-LLM result. I deliberately chose the regime where soundness
 can be **checked**. CANDOR does **not** claim completeness: computation in superposition
 guarantees some bypass, so `δ` cannot be driven to zero on arbitrary computation. The
 contribution is to make that bypass **measured, bounded, and certified** rather than
-unmeasured, and the certificate's value is **soundness, not tightness**: a large honest `δ`
+unmeasured, and the certificate's value is **soundness, not tightness**: a large `δ`
 tells you exactly when *not* to trust the named-concept explanation. See the paper's
 Limitations section. Every component (sparse named channels, causal-faithfulness training,
 concept bottlenecks, sound over-approximation) has precedent; **the novelty is the
