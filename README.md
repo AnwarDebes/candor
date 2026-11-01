@@ -54,7 +54,14 @@ hand-entered.**
 
 **[Open the glass box](https://anwardebes.github.io/candor/)**: two trained CANDOR networks, running in your browser layer by layer.
 
+<a href="https://anwardebes.github.io/candor/"><img src="docs/film-preview.webp" width="100%" alt="CANDOR: most AI explanations are written afterwards, so CANDOR builds the explanation into the network. Click to open the live glass box."></a>
+
+<details>
+<summary>▶ Watch the 50-second film with sound</summary>
+
 https://github.com/user-attachments/assets/902f0c7f-0525-42d3-9f78-9b5bb6f7d4bb
+
+</details>
 
 Toggle the hidden patterns in an input and watch the concept layer name them, the leak get measured, and the certificate stay near zero. Switch a concept off and the legible twin changes its answer: the explanation is what the model runs on. Then plant a trigger in a backdoored model: it gets atoms that no pattern explains, and switching those off sends the certificate up. The page measures δ on 1,200 fresh inputs to show how well it separates clean from triggered. Weights come from `candorkit` (`live/export_model.py`), and a test checks the JavaScript forward pass against PyTorch.
 
