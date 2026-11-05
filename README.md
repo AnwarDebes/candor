@@ -20,6 +20,18 @@ Bottleneck, and emit a runtime bound on everything the named concepts cannot exp
 
 ---
 
+**CANDOR is a paper and a PyTorch reference implementation (`candorkit`).** Most AI
+explanations are written afterwards; CANDOR builds the explanation into the network. A
+layer's computation is forced through a small set of named concepts, the part they cannot
+explain (the *leak*) is kept and measured, and every forward pass reports `δ`: how far the
+model's answer is from the answer its named concepts alone give. A small `δ` means the
+explanation is what the model actually runs on; a large `δ` says exactly when not to trust
+it, and a backdoor that bypasses the concepts shows up as a `δ` spike. The evidence is
+small-scale: synthetic tasks with known ground truth, plus real-text probes on GPT-2 small
+and a 4-layer LM trained from scratch.
+
+▶ See this project in the film *Show Its Work*: https://youtu.be/pefnyZ-oCcM?t=732
+
 For a decade interpretability has been **archaeology**: train an opaque model, then dig
 for structure afterwards with probes, sparse autoencoders, and attribution graphs. By
 2026 that paradigm is in open crisis. SAEs do not recover canonical features and often
@@ -88,7 +100,7 @@ contribution.* The Legible Bottleneck also composes with attention on a sequence
 **Real-LLM probes (GPT-2 small, and a from-scratch LM).** Retrofitting the channel
 onto a *frozen* GPT-2 shows the certificate machinery transfers to a real model (δ is
 measurable by splicing and running GPT-2), **but a frozen retrofit does *not* favour CANDOR
-over a reconstruction-only SAE** (δ 0.11 vs 0.13). A matched **layer-wise fine-tuning
+over a reconstruction-only SAE** (δ 0.11 for the SAE vs 0.13 for CANDOR). A matched **layer-wise fine-tuning
 probe** (`exp_gpt2_ft.py`, unfreezing the spliced MLP under a capability-anchoring LM loss)
 extends the finding two ways: an ~8x reconstruction improvement leaves the certificate no
 tighter (**reconstruction and faithfulness dissociate**), and adding the behavioural +
@@ -119,7 +131,11 @@ python demo/quickstart.py              # train a glass-box model, certify it, ca
 python experiments/run_all.py          # regenerate results/*.json (planted, tax, seq)
 python scripts/paper_numbers.py        # results -> paper/_numbers.tex
 python scripts/make_figures.py         # results -> paper/figures/*.pdf
-make paper                             # compile paper/candor.pdf
+make paper                             # compile paper/candor.pdf (needs latexmk)
+
+# optional real-text probes (downloads GPT-2 weights/tokeniser and TinyShakespeare)
+pip install -e ".[llm]"
+python experiments/run_all.py gpt2 gpt2_ft gpt2_ft_sweep lm_scratch
 ```
 
 ```python
