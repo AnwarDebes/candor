@@ -32,6 +32,8 @@ and a 4-layer LM trained from scratch.
 
 ▶ See this project in the film *Show Its Work*: https://youtu.be/pefnyZ-oCcM?t=732
 
+▶ Watch it in 40 seconds: https://anwardebes.github.io/shorts/#candor
+
 For a decade interpretability has been **archaeology**: train an opaque model, then dig
 for structure afterwards with probes, sparse autoencoders, and attribution graphs. By
 2026 that paradigm is in open crisis. SAEs do not recover canonical features and often
